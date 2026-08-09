@@ -69,9 +69,17 @@
     }
     .email-item:hover { background: #f3f2f1; }
     .email-item.selected { background: #eff6fc; border-left: 4px solid var(--primary-blue); }
-    .email-item .sender { font-weight: 600; font-size: 13px; margin-bottom: 2px; color: #201f1e; display: flex; justify-content: space-between; }
+    .email-item .sender { font-weight: 600; font-size: 13px; margin-bottom: 2px; color: #201f1e; display: flex; justify-content: space-between; align-items: center; }
     .email-item .subject { font-size: 13px; color: var(--text-dark); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
     .email-item .snippet { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+    /* Status Badges on List Items */
+    .status-tag {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; text-transform: uppercase;
+    }
+    .status-tag.safe-tag { background: #e6f4ea; color: var(--safe-color); border: 1px solid #a8dab5; }
+    .status-tag.danger-tag { background: #fde8e8; color: var(--spam-color); border: 1px solid #f8b4b4; }
 
     /* Reading Pane */
     .reading-pane { flex: 1; background: white; display: flex; flex-direction: column; }
@@ -84,10 +92,11 @@
       border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;
     }
     .btn-action:hover { background: #f3f2f1; }
+    .btn-action:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-report { background: var(--danger-bg); color: var(--spam-color); border-color: #f8b4b4; font-weight: 600; }
-    .btn-report:hover { background: #fbd5d5; }
+    .btn-report:hover:not(:disabled) { background: #fbd5d5; }
     .btn-safe { background: var(--success-bg); color: var(--safe-color); border-color: #a8dab5; font-weight: 600; }
-    .btn-safe:hover { background: #ceebd5; }
+    .btn-safe:hover:not(:disabled) { background: #ceebd5; }
 
     .email-content { padding: 24px; overflow-y: auto; flex: 1; }
     .email-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
@@ -104,6 +113,12 @@
       transition: all 0.2s;
     }
     .attachment-box:hover { background: #f0f6ff; border-color: var(--primary-blue); }
+
+    /* Persistent Inline Error Alert inside Reading Pane */
+    .inline-error-banner {
+      background: #fde8e8; border: 1px solid #f8b4b4; color: #d13438;
+      padding: 12px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 13px; line-height: 1.5;
+    }
 
     /* Status Bar */
     .status-bar {
@@ -176,7 +191,7 @@
       display: none; align-items: center; justify-content: space-between; font-weight: 500;
     }
 
-    .empty-state { display: flex; height: 100%; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; }
+    .empty-state { display: flex; height: 100%; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; flex-direction: column; gap: 8px; }
   </style>
 </head>
 <body>
@@ -193,12 +208,10 @@
         <p>This webmail security simulator tests your ability to spot social engineering attacks, domain spoofing, and malicious attachments before making a mistake.</p>
         
         <ul class="instructions-list">
-          <li><strong>Initial Setup & Daily Additions:</strong> You start with <strong>25 emails</strong> (40% Phishing, 60% Legitimate). Automatically, <strong>3 new phishing emails</strong> are added every 24 hours to simulate a live corporate inbox.</li>
-          <li><strong>Persistent User Cache & Retention:</strong> All folder states and email selections stay cached per browser. On every new week cycle, emails marked as <em>Safe</em> or <em>Phishing</em> are cleaned out, but your <strong>Training Performance stats are retained indefinitely</strong>.</li>
-          <li><strong>Interactive Educational Feedback:</strong> If you mark an email incorrectly, the simulator will instantly break down the exact red flags you missed or explain why a legitimate message was safe.</li>
-          <li><strong>Inspect Sender Addresses:</strong> Look out for sneaky typosquatting tricks like <code style="background:#eee; padding:2px 4px;">quickbo0ks</code> (zero instead of 'o'), <code style="background:#eee; padding:2px 4px;">paypaI</code> (capital 'I' instead of 'l'), or <code style="background:#eee; padding:2px 4px;">rnicro</code> ('r' + 'n' mimicking 'm').</li>
-          <li><strong>Hover Over Links:</strong> Place your cursor over body links to preview the destination URL in the status bar at the bottom. Compare the link text with where it actually points.</li>
-          <li><strong>Inspect PDF Invoices:</strong> Click PDF attachments to open authentic PDF document previews. Look for fraudulent vendor names, excessive charges, or suspicious payment gateways.</li>
+          <li><strong>25 Email Batch Engine:</strong> Starts with <strong>25 emails</strong> (40% Phishing, 60% Legitimate) in random order. Automatically, <strong>3 new phishing emails</strong> are added every 24 hours.</li>
+          <li><strong>Realistic Inbox Verification & Feedback:</strong> If you mark a legitimate email as Safe, a green check tag (<span class="status-tag safe-tag">✓ Safe</span>) appears next to it. If you mistakenly mark a Phishing email as Safe, an explicit <strong>Security Alert Breakdown</strong> pops up detailing why you are wrong, and the email receives a permanent <span class="status-tag danger-tag">⚠️ Missed Phish</span> tag.</li>
+          <li><strong>Phishing & Spam Routing:</strong> When an email is reported as phishing, it gets isolated and moved into the <strong>Junk / Spam</strong> folder.</li>
+          <li><strong>Persistent User Cache & Retention:</strong> All folder states and email selections stay cached per browser. Training Performance stats are retained indefinitely.</li>
         </ul>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
@@ -209,7 +222,7 @@
     </div>
   </div>
 
-  <!-- Educational Feedback Modal (Shown when user classifies an email) -->
+  <!-- Educational Feedback Modal -->
   <div class="modal-overlay" id="feedback-modal" style="display:none;">
     <div class="modal-card">
       <div class="modal-header" id="feedback-modal-header">
@@ -225,7 +238,7 @@
         </div>
 
         <div style="text-align:right; margin-top:20px;">
-          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeFeedbackModal()">Continue Training ⏩</button>
+          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeFeedbackModal()">Acknowledge & Continue ⏩</button>
         </div>
       </div>
     </div>
@@ -260,19 +273,23 @@
         <span>📥 Inbox</span>
         <span class="badge" id="inbox-count">0</span>
       </div>
+      <div class="folder-item" id="folder-drafts" onclick="switchFolder('drafts')">
+        <span>📝 Drafts</span>
+        <span class="badge" id="drafts-count" style="background:#605e5c;">0</span>
+      </div>
+      <div class="folder-item" id="folder-sent" onclick="switchFolder('sent')">
+        <span>📤 Sent</span>
+        <span class="badge" id="sent-count" style="background:#605e5c;">0</span>
+      </div>
       <div class="folder-item" id="folder-spam" onclick="switchFolder('spam')">
         <span>🚨 Junk / Spam</span>
         <span class="badge" id="spam-count" style="background:#605e5c;">0</span>
-      </div>
-      <div class="folder-item" id="folder-safe" onclick="switchFolder('safe')">
-        <span>✅ Verified Safe</span>
-        <span class="badge" id="safe-count" style="background:var(--safe-color);">0</span>
       </div>
 
       <div class="stats-panel">
         <strong style="display:block; margin-bottom:8px; font-size:13px;">Training Performance</strong>
         <div class="stat-row"><span>Phishing Caught:</span><span id="stat-caught">0</span></div>
-        <div class="stat-row"><span>False Positives:</span><span id="stat-fp">0</span></div>
+        <div class="stat-row"><span>False Positives / Errors:</span><span id="stat-fp">0</span></div>
         <div class="stat-row"><span>Detection Accuracy:</span><span id="stat-accuracy">100%</span></div>
       </div>
     </div>
@@ -286,11 +303,12 @@
       
       <div id="email-view" style="display:none; flex-direction:column; height:100%;">
         <div class="action-bar">
-          <button class="btn-action btn-report" onclick="reportCurrentPhishing()">🚩 Report Phishing</button>
-          <button class="btn-action btn-safe" onclick="markCurrentSafe()">✅ Mark as Safe</button>
+          <button class="btn-action btn-report" id="btn-report-action" onclick="reportCurrentPhishing()">🚩 Report Phishing</button>
+          <button class="btn-action btn-safe" id="btn-safe-action" onclick="markCurrentSafe()">✅ Mark as Safe</button>
           <button class="btn-action" onclick="deleteCurrentEmail()">🗑 Delete</button>
         </div>
         <div class="email-content">
+          <div id="inline-alert-area"></div>
           <div class="email-header">
             <h2 id="view-subject"></h2>
             <div class="sender-details">
@@ -323,7 +341,7 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'ruinscam_email_sim_v4';
+    const STORAGE_KEY = 'ruinscam_email_sim_v6';
 
     // App State Structure
     let appState = {
@@ -336,7 +354,7 @@
       selectedEmailId: null
     };
 
-    // --- Master Phishing Templates with Highlighted Educational Indicators ---
+    // --- Master Phishing Templates ---
     const phishingTemplates = [
       {
         senderName: "QuickBooks Invoicing",
@@ -823,6 +841,7 @@
         id: 'email_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
         isPhishing: isPhishing,
         folder: 'inbox',
+        status: null, // null | 'correct_safe' | 'incorrect_safe' | 'correct_phish' | 'incorrect_phish'
         senderName: template.senderName,
         senderEmail: template.senderEmail,
         subject: template.subject,
@@ -885,64 +904,94 @@
       document.getElementById('feedback-modal').style.display = 'none';
     }
 
-    // --- User Actions with Detailed Explanations ---
-    function reportCurrentPhishing() {
-      if (!appState.selectedEmailId) return;
-      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
-      if (!email) return;
-
-      email.folder = 'spam';
-
-      if (email.isPhishing) {
-        // Correct Action
-        appState.stats.caught++;
-        showEducationalFeedback(
-          false,
-          "Phishing Threat Identified!",
-          "Great job! You correctly identified and reported this phishing attempt.",
-          "Red Flags You Successfully Caught:",
-          email.redFlags
-        );
-      } else {
-        // Mistake: Reported Legitimate Email
-        appState.stats.falsePositives++;
-        showEducationalFeedback(
-          true,
-          "False Alarm: Legitimate Email Reported",
-          "Mistake: You reported a safe, legitimate email as phishing (False Positive).",
-          "Why This Email Was Actually Safe:",
-          email.safetyFeatures
-        );
-      }
-
-      appState.selectedEmailId = null;
-      saveToLocalStorage();
-      renderApp();
-    }
-
+    // --- User Actions with Explicit Error Handling ---
     function markCurrentSafe() {
       if (!appState.selectedEmailId) return;
       const email = appState.emails.find(e => e.id === appState.selectedEmailId);
       if (!email) return;
 
-      email.folder = 'safe';
+      // Check if already evaluated
+      if (email.status) {
+        if (email.status === 'incorrect_safe') {
+          showEducationalFeedback(
+            true,
+            "❌ WHY YOU ARE WRONG: Dangerous Phishing Threat!",
+            "You previously marked this email as 'SAFE', but it is a dangerous PHISHING attack!",
+            "Red Flags You Missed in This Email:",
+            email.redFlags
+          );
+        } else if (email.status === 'correct_safe') {
+          showEducationalFeedback(
+            false,
+            "✅ Verified Safe Email",
+            "This email was already verified as Safe.",
+            "Security Features Verified:",
+            email.safetyFeatures
+          );
+        }
+        return;
+      }
 
       if (email.isPhishing) {
-        // Mistake: Marked Phishing as Safe
+        // MISTAKE: Marking a Phishing email as Safe
+        email.status = 'incorrect_safe'; // Stays in inbox with a red warning badge
+        appState.stats.falsePositives++;
         showEducationalFeedback(
           true,
-          "Security Compromise: Phishing Threat Missed!",
-          "Critical Mistake: You marked a dangerous phishing email as Safe!",
-          "Red Flags You Missed in This Email:",
+          "❌ INCORRECT: Security Risk Introduced!",
+          "WHY YOU ARE WRONG: You marked this email as 'SAFE', but it is actually a dangerous PHISHING attack! It will remain in your inbox tagged as a Missed Phish.",
+          "Red Flags You Missed (Why It Is Phishing):",
           email.redFlags
         );
       } else {
-        // Correct Action
+        // CORRECT: Legitimate email marked safe
+        email.status = 'correct_safe';
+        appState.stats.caught++;
         showEducationalFeedback(
           false,
-          "Verified Safe Email",
-          "Correct! This was a legitimate email message.",
-          "Security Verification Features:",
+          "✅ CORRECT: Legitimate Email Verified",
+          "You correctly verified this message as Safe. It remains in your inbox marked with a green checkmark.",
+          "Security Features Verified:",
+          email.safetyFeatures
+        );
+      }
+
+      saveToLocalStorage();
+      renderApp();
+    }
+
+    function reportCurrentPhishing() {
+      if (!appState.selectedEmailId) return;
+      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
+      if (!email) return;
+
+      if (email.status === 'correct_phish') {
+        alert("This email has already been reported as phishing and moved to Spam.");
+        return;
+      }
+
+      if (email.isPhishing) {
+        // CORRECT: Phishing email reported
+        email.folder = 'spam';
+        email.status = 'correct_phish';
+        appState.stats.caught++;
+        showEducationalFeedback(
+          false,
+          "✅ CORRECT: Phishing Attack Neutralized!",
+          "Great job! You correctly identified and reported this phishing threat. It has been isolated and moved to Junk / Spam.",
+          "Red Flags You Successfully Caught:",
+          email.redFlags
+        );
+      } else {
+        // MISTAKE: Legitimate email reported as phishing
+        email.folder = 'spam';
+        email.status = 'incorrect_phish';
+        appState.stats.falsePositives++;
+        showEducationalFeedback(
+          true,
+          "❌ INCORRECT: False Alarm",
+          "WHY YOU ARE WRONG: You reported a safe, legitimate email as phishing (False Positive).",
+          "Why This Email Was Actually Safe:",
           email.safetyFeatures
         );
       }
@@ -964,11 +1013,11 @@
     function renderApp() {
       const inboxList = appState.emails.filter(e => e.folder === 'inbox');
       const spamList = appState.emails.filter(e => e.folder === 'spam');
-      const safeList = appState.emails.filter(e => e.folder === 'safe');
 
       document.getElementById('inbox-count').innerText = inboxList.length;
       document.getElementById('spam-count').innerText = spamList.length;
-      document.getElementById('safe-count').innerText = safeList.length;
+      document.getElementById('drafts-count').innerText = 0;
+      document.getElementById('sent-count').innerText = 0;
       document.getElementById('total-emails-display').innerText = appState.emails.length;
       document.getElementById('cycle-display').innerText = `Week ${appState.currentWeek}`;
 
@@ -977,17 +1026,31 @@
       
       listContainer.innerHTML = '';
 
-      if (filteredEmails.length === 0) {
+      if (appState.activeFolder === 'drafts' || appState.activeFolder === 'sent') {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+            <div>No messages in ${appState.activeFolder}</div>
+          </div>`;
+      } else if (filteredEmails.length === 0) {
         listContainer.innerHTML = `<div class="empty-state">Folder is empty</div>`;
       } else {
         filteredEmails.forEach(email => {
           const item = document.createElement('div');
           item.className = `email-item ${email.id === appState.selectedEmailId ? 'selected' : ''}`;
           item.onclick = () => selectEmail(email.id);
+
+          let badgeHtml = '';
+          if (email.status === 'correct_safe') {
+            badgeHtml = `<span class="status-tag safe-tag">✓ Safe</span>`;
+          } else if (email.status === 'incorrect_safe') {
+            badgeHtml = `<span class="status-tag danger-tag">⚠️ Missed Phish</span>`;
+          }
+
           item.innerHTML = `
             <div class="sender">
               <span>${escapeHtml(email.senderName)}</span>
-              <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">${email.date}</span>
+              ${badgeHtml}
             </div>
             <div class="subject">${escapeHtml(email.subject)}</div>
             <div class="snippet">${escapeHtml(email.snippet)}</div>
@@ -999,13 +1062,25 @@
       const selected = appState.emails.find(e => e.id === appState.selectedEmailId);
       const emptyState = document.getElementById('empty-state');
       const emailView = document.getElementById('email-view');
+      const inlineAlert = document.getElementById('inline-alert-area');
 
-      if (!selected) {
+      if (!selected || appState.activeFolder === 'drafts' || appState.activeFolder === 'sent') {
         emptyState.style.display = 'flex';
         emailView.style.display = 'none';
       } else {
         emptyState.style.display = 'none';
         emailView.style.display = 'flex';
+
+        // Render Persistent Inline Alert Header if email was evaluated incorrectly as Safe
+        inlineAlert.innerHTML = '';
+        if (selected.status === 'incorrect_safe') {
+          inlineAlert.innerHTML = `
+            <div class="inline-error-banner">
+              <strong>⚠️ SECURITY WARNING (MISSED PHISHING ATTACK):</strong><br>
+              You marked this email as "Safe", but it is a confirmed phishing threat! Review the red flags below or click <strong>🚩 Report Phishing</strong> to neutralize it.
+            </div>
+          `;
+        }
 
         document.getElementById('view-subject').innerText = selected.subject;
         document.getElementById('view-sender-name').innerText = selected.senderName;
@@ -1058,7 +1133,8 @@
     function switchFolder(folder) {
       appState.activeFolder = folder;
       document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
-      document.getElementById(`folder-${folder}`).classList.add('active');
+      const activeNav = document.getElementById(`folder-${folder}`);
+      if (activeNav) activeNav.classList.add('active');
       appState.selectedEmailId = null;
       saveToLocalStorage();
       renderApp();
@@ -1183,7 +1259,7 @@
     // --- Weekly Cycle Reset Logic ---
     document.getElementById('btn-advance-week').onclick = () => {
       appState.currentWeek++;
-      appState.emails = appState.emails.filter(e => e.folder !== 'safe' && e.folder !== 'spam');
+      appState.emails = appState.emails.filter(e => e.folder !== 'spam');
       
       const newBatch = generateNewBatchOfEmails();
       appState.emails = newBatch;
@@ -1197,7 +1273,7 @@
       document.getElementById('folder-inbox').classList.add('active');
       
       renderApp();
-      alert(`New 7-Day Cycle Started!\n\n• Emails marked Safe or Phishing were removed.\n• Inbox refreshed with 25 new emails.\n• Your Training Performance stats have been preserved indefinitely!`);
+      alert(`New 7-Day Cycle Started!\n\n• Emails in Junk / Spam were removed.\n• Inbox refreshed with 25 new emails.\n• Your Training Performance stats have been preserved indefinitely!`);
     };
 
     function escapeHtml(str) {
