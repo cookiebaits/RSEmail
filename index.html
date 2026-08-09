@@ -14,13 +14,12 @@
       --text-muted: #605e5c;
       --spam-color: #d13438;
       --safe-color: #107c41;
-      --invoice-border: #cccccc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { display: flex; flex-direction: column; height: 100vh; background-color: #faf9f8; color: var(--text-dark); overflow: hidden; }
 
-    /* Top Navigation Bar */
+    /* Top Bar */
     .top-bar {
       height: 48px;
       background-color: var(--primary-blue);
@@ -32,17 +31,22 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .brand { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-    .sim-controls { display: flex; align-items: center; gap: 16px; font-size: 13px; }
+    .sim-controls { display: flex; align-items: center; gap: 12px; font-size: 13px; }
     .btn-sim {
       background: white; color: var(--primary-blue); border: none; padding: 6px 12px;
       border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s;
     }
     .btn-sim:hover { background: #eff6fc; }
+    .btn-sim-alt {
+      background: transparent; color: white; border: 1px solid white; padding: 5px 11px;
+      border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s;
+    }
+    .btn-sim-alt:hover { background: rgba(255,255,255,0.15); }
 
     /* App Layout */
     .app-container { display: flex; flex: 1; overflow: hidden; }
 
-    /* Left Sidebar */
+    /* Sidebar */
     .sidebar { width: 230px; background: #f3f2f1; border-right: 1px solid var(--border-color); padding: 12px 0; display: flex; flex-direction: column; }
     .folder-item {
       display: flex; justify-content: space-between; align-items: center;
@@ -105,45 +109,77 @@
       font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Authentic Document Preview Modal */
+    /* Modal Styling */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
+      background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
     }
     .modal-card {
-      background: white; width: 680px; max-width: 95%; border-radius: 8px;
+      background: white; width: 720px; max-width: 95%; border-radius: 8px;
       box-shadow: 0 12px 32px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column;
     }
     .modal-header {
-      padding: 12px 20px; background: #2b2b2b; color: white;
-      display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px;
+      padding: 14px 20px; background: #2b2b2b; color: white;
+      display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 15px;
     }
-    .modal-body { padding: 32px; font-size: 13px; line-height: 1.5; max-height: 80vh; overflow-y: auto; background: #787878; display: flex; justify-content: center; }
+    .modal-body { padding: 28px; font-size: 13px; line-height: 1.6; max-height: 80vh; overflow-y: auto; }
     .close-btn { cursor: pointer; border: none; background: none; font-size: 18px; color: #ccc; }
     .close-btn:hover { color: white; }
 
-    /* PDF Invoice Stylings */
+    /* Realistic PDF Invoice Layout inside Modal */
+    .pdf-viewer-bg { background: #525659; padding: 24px; display: flex; justify-content: center; }
     .pdf-paper {
-      background: white; width: 100%; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-      font-family: Arial, Helvetica, sans-serif; color: #333;
+      background: white; width: 100%; max-width: 600px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333;
     }
-    .invoice-header-row { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid var(--primary-blue); padding-bottom: 16px; }
-    .invoice-title { font-size: 28px; font-weight: bold; color: var(--primary-blue); text-transform: uppercase; }
+    .invoice-header-row { display: flex; justify-content: space-between; margin-bottom: 24px; border-bottom: 2px solid var(--primary-blue); padding-bottom: 16px; }
+    .invoice-title { font-size: 26px; font-weight: bold; color: var(--primary-blue); text-transform: uppercase; letter-spacing: 1px; }
     .invoice-meta { text-align: right; font-size: 12px; }
-    .invoice-addresses { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 12px; }
-    .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
-    .invoice-table th { background: #f2f2f2; border: 1px solid #ddd; padding: 8px; text-align: left; }
-    .invoice-table td { border: 1px solid #ddd; padding: 8px; }
-    .invoice-total-section { display: flex; justify-content: flex-end; margin-bottom: 30px; }
-    .invoice-total-table { width: 240px; font-size: 12px; }
+    .invoice-addresses { display: flex; justify-content: space-between; margin-bottom: 24px; font-size: 12px; }
+    .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 12px; }
+    .invoice-table th { background: #f8f9fa; border: 1px solid #dee2e6; padding: 8px; text-align: left; font-weight: 600; }
+    .invoice-table td { border: 1px solid #dee2e6; padding: 8px; }
+    .invoice-total-section { display: flex; justify-content: flex-end; margin-bottom: 24px; }
+    .invoice-total-table { width: 220px; font-size: 12px; }
     .invoice-total-table td { padding: 4px 8px; }
     .invoice-total-table .grand-total { font-weight: bold; font-size: 14px; border-top: 2px solid #333; }
     .invoice-footer { border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #666; text-align: center; }
+
+    /* Instructions Modal Custom Styling */
+    .instructions-list { margin: 16px 0; padding-left: 20px; }
+    .instructions-list li { margin-bottom: 10px; }
+    .instruction-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
 
     .empty-state { display: flex; height: 100%; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; }
   </style>
 </head>
 <body>
+
+  <!-- Instructions Overlay Modal -->
+  <div class="modal-overlay" id="instructions-modal">
+    <div class="modal-card">
+      <div class="modal-header">
+        <span>📘 RuinScam Email Phishing Simulator — Training Guide</span>
+        <button class="close-btn" onclick="closeInstructions()">✕</button>
+      </div>
+      <div class="modal-body">
+        <h3 style="font-size:16px; margin-bottom:8px; color:var(--primary-blue);">Welcome to the Phishing Awareness Simulator</h3>
+        <p>This simulator tests your ability to inspect webmail messages and catch sophisticated social engineering attacks before they compromise your network.</p>
+        
+        <ul class="instructions-list">
+          <li><strong>25 Emails per Batch:</strong> Each 7-day cycle delivers exactly <strong>25 emails</strong> (40% Phishing, 60% Legitimate) mixed in complete random order.</li>
+          <li><strong>Inspect Sender Addresses:</strong> Look closely for sneaky typosquatting tricks like <code style="background:#eee; padding:2px 4px;">quickbo0ks</code> (zero instead of 'o'), <code style="background:#eee; padding:2px 4px;">paypaI</code> (capital 'I' instead of 'l'), or <code style="background:#eee; padding:2px 4px;">rnicro</code> ('r' + 'n' mimicking 'm').</li>
+          <li><strong>Hover Over Links:</strong> Place your cursor over body links to view the real target URL in the bottom status bar. Compare the visible text with the raw destination URL.</li>
+          <li><strong>Inspect PDF Invoices:</strong> Click on PDF attachments to open authentic PDF document previews. Look for unexpected line items, fraudulent vendor domains, or demands for immediate wire settlement.</li>
+          <li><strong>Take Action:</strong> Use the top action bar to click <span class="instruction-badge" style="background:#fde8e8; color:#d13438;">🚩 Report Phishing</span> to send threats to Junk/Spam, or <span class="instruction-badge" style="background:#e6f4ea; color:#107c41;">✅ Mark as Safe</span> for legitimate correspondence.</li>
+        </ul>
+
+        <div style="text-align:right; margin-top:20px;">
+          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeInstructions()">Start Training Simulation 🚀</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- Top Bar -->
   <div class="top-bar">
@@ -154,6 +190,7 @@
     <div class="sim-controls">
       <span>Batch Cycle: <strong id="cycle-display">Week 1</strong></span>
       <span>Total Emails: <strong id="total-emails-display">25</strong></span>
+      <button class="btn-sim-alt" onclick="openInstructions()">❓ Instructions</button>
       <button class="btn-sim" id="btn-advance-week">New 7-Day Cycle ⏩</button>
     </div>
   </div>
@@ -219,13 +256,13 @@
   </div>
 
   <!-- Document Modal -->
-  <div class="modal-overlay" id="doc-modal">
+  <div class="modal-overlay" id="doc-modal" style="display:none;">
     <div class="modal-card">
       <div class="modal-header">
-        <span id="modal-title">PDF Preview</span>
+        <span id="modal-title">PDF Reader</span>
         <button class="close-btn" onclick="closeModal()">✕</button>
       </div>
-      <div class="modal-body" id="modal-content"></div>
+      <div class="modal-body pdf-viewer-bg" id="modal-content"></div>
     </div>
   </div>
 
@@ -237,7 +274,7 @@
     let stats = { caught: 0, falsePositives: 0 };
     let emails = [];
 
-    // --- Master Phishing Templates (15 unique scenarios with typosquatting, urgency, link traps) ---
+    // --- Master Phishing Templates (10 distinct scenarios with typosquatting, urgency, link traps) ---
     const phishingTemplates = [
       {
         senderName: "QuickBooks Invoicing",
@@ -254,7 +291,7 @@
           invDate: "12 Days Ago",
           dueDate: "IMMEDIATE",
           items: [
-            { desc: "QuickBooks Enterprise Enterprise Cloud Subscription (Annual)", qty: 1, price: "$2,450.00", total: "$2,450.00" },
+            { desc: "QuickBooks Enterprise Cloud Subscription (Annual)", qty: 1, price: "$2,450.00", total: "$2,450.00" },
             { desc: "Late Settlement Administrative Processing Fee", qty: 1, price: "$245.00", total: "$245.00" }
           ],
           subtotal: "$2,695.00", tax: "$0.00", grandTotal: "$2,695.00",
@@ -266,12 +303,12 @@
         senderEmail: "no-reply@micros0ft-account-alerts.info", // Typosquatting: micros0ft
         subject: "Security Alert: Unusual sign-in activity detected",
         snippet: "Unusual login attempt from Moscow, Russia detected on your Microsoft account.",
-        body: `<p>We detected an unauthorized login attempt from IP 185.220.101.5 (Moscow, Russia).</p><p>If this was not you, reset your password immediately via the security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">https://account.microsoft.com/security/reset-auth</a></p>`, // Deceptive visible text vs href
+        body: `<p>We detected an unauthorized login attempt from IP 185.220.101.5 (Moscow, Russia).</p><p>If this was not you, reset your password immediately via the security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">https://account.microsoft.com/security/reset-auth</a></p>`,
         hasAttachment: false
       },
       {
         senderName: "PayPal Fraud Department",
-        senderEmail: "service@paypaI-support-center.com", // Typosquatting: Capital I instead of l in paypaI
+        senderEmail: "service@paypaI-support-center.com", // Typosquatting: Capital I instead of l
         subject: "Notice: Payment of $1,299.00 sent to CryptoExchange Inc.",
         snippet: "You authorized a payment of $1,299.00 USD. If you did not make this purchase, click inside.",
         body: `<p>You sent a payment of <strong>$1,299.00 USD</strong> to CryptoExchange Global LLC.</p><p>If you did not authorize this charge, dispute the transaction instantly:</p><p><a href="http://paypaI-support-center.com/dispute/tx90123" class="sim-link">Cancel Payment & Dispute Transaction</a></p>`,
@@ -300,10 +337,10 @@
       },
       {
         senderName: "IT Desk Support",
-        senderEmail: "helpdesk@rnicro-corp-support.com", // Typosquatting: rn instead of m in rnicro
+        senderEmail: "helpdesk@rnicro-corp-support.com", // Typosquatting: rn instead of m
         subject: "URGENT: Corporate Email Password Expiration Notice",
         snippet: "Your webmail password expires in 2 hours. Click to maintain existing password.",
-        body: `<p>Your webmail authentication credential will expire in 2 hours.</p><p>Failure to update will lock your account out of corporate Outlook and VPN access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Current Password & Extend Expiration</a></p>`,
+        body: `<p>Your webmail authentication credential will expire in 2 hours.</p><p>Failure to update will lock your account out of corporate webmail and VPN access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Current Password & Extend Expiration</a></p>`,
         hasAttachment: false
       },
       {
@@ -371,7 +408,7 @@
       },
       {
         senderName: "HR Payroll Department",
-        senderEmail: "payroll@company-hr-portal-benefits.net", // Fake external domain pretending to be internal
+        senderEmail: "payroll@company-hr-portal-benefits.net", // Fake external domain
         subject: "IMPORTANT: Direct Deposit Account Verification Needed",
         snippet: "Please verify your bank details before the upcoming payroll run.",
         body: `<p>Due to system migration, employees must re-verify direct deposit credentials prior to Friday's payroll run.</p><p><a href="http://company-hr-portal-benefits.net/verify-payroll" class="sim-link">Update Direct Deposit Information</a></p>`,
@@ -387,7 +424,7 @@
       }
     ];
 
-    // --- Master Legitimate Templates (20 unique scenarios) ---
+    // --- Master Legitimate Templates (15 distinct scenarios) ---
     const legitTemplates = [
       {
         senderName: "HR Department",
@@ -510,31 +547,54 @@
         snippet: "Please update your security keycard at building lobby desk.",
         body: `<p>All employees must update physical keycards by the end of the month.</p><p>Contact facilities directly at <a href="https://internal.company.com/facilities" class="sim-link">Internal Facilities Portal</a>.</p>`,
         hasAttachment: false
+      },
+      {
+        senderName: "Notion Workspace",
+        senderEmail: "notify@notion.so",
+        subject: "Page update: 'Q3 Product Roadmap'",
+        snippet: "2 new updates were made to Q3 Product Roadmap.",
+        body: `<p>Updates made in workspace:</p><p><a href="https://notion.so/workspace/q3-roadmap" class="sim-link">View Updates in Notion</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Docker Security",
+        senderEmail: "security@docker.com",
+        subject: "Personal Access Token Created",
+        snippet: "A new Personal Access Token was generated for your account.",
+        body: `<p>A new token 'CI-Pipeline-Deploy' was created.</p><p><a href="https://hub.docker.com/settings/security" class="sim-link">Review Security Settings</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "LinkedIn Network",
+        senderEmail: "messages-noreply@linkedin.com",
+        subject: "You have 2 new connection requests",
+        snippet: "Alex Rivera and Taylor Smith requested to connect.",
+        body: `<p>Expand your network on LinkedIn.</p><p><a href="https://linkedin.com/mynetwork" class="sim-link">View Connection Requests</a></p>`,
+        hasAttachment: false
       }
     ];
 
     // --- Generation Engine: Exactly 25 Emails (10 Phishing = 40%, 15 Legit = 60%) ---
     function generateWeeklyInbox() {
       emails = [];
-      const totalCount = 25;
       const phishingCount = 10; // Exactly 40%
       const legitCount = 15;    // Exactly 60%
 
-      // Pick 10 random Phishing templates
+      // Pick 10 Phishing templates
       let shuffledPhish = [...phishingTemplates].sort(() => Math.random() - 0.5);
       for (let i = 0; i < phishingCount; i++) {
         let template = shuffledPhish[i % shuffledPhish.length];
         emails.push(createEmailObject(template, true));
       }
 
-      // Pick 15 random Legitimate templates
+      // Pick 15 Legitimate templates
       let shuffledLegit = [...legitTemplates].sort(() => Math.random() - 0.5);
       for (let i = 0; i < legitCount; i++) {
         let template = shuffledLegit[i % shuffledLegit.length];
         emails.push(createEmailObject(template, false));
       }
 
-      // Shuffle all 25 emails so there is zero pattern/order
+      // Shuffle all 25 emails thoroughly
       emails.sort(() => Math.random() - 0.5);
 
       selectedEmailId = null;
@@ -713,7 +773,7 @@
       const title = document.getElementById('modal-title');
       const content = document.getElementById('modal-content');
 
-      title.innerText = `PDF Document Reader: ${email.attachmentName}`;
+      title.innerText = `PDF Reader: ${email.attachmentName}`;
       
       const inv = email.invoiceData;
       let itemsHtml = inv.items.map(i => `
@@ -802,6 +862,14 @@
 
     function closeModal() {
       document.getElementById('doc-modal').style.display = 'none';
+    }
+
+    function openInstructions() {
+      document.getElementById('instructions-modal').style.display = 'flex';
+    }
+
+    function closeInstructions() {
+      document.getElementById('instructions-modal').style.display = 'none';
     }
 
     // --- 7-Day Cycle Automation ---
