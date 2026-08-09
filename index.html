@@ -19,7 +19,7 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
     body { display: flex; flex-direction: column; height: 100vh; background-color: #faf9f8; color: var(--text-dark); overflow: hidden; }
 
-    /* Top Bar */
+    /* Top Navigation Bar */
     .top-bar {
       height: 48px;
       background-color: var(--primary-blue);
@@ -31,7 +31,7 @@
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
     .brand { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
-    .sim-controls { display: flex; align-items: center; gap: 12px; font-size: 13px; }
+    .sim-controls { display: flex; align-items: center; gap: 10px; font-size: 13px; }
     .btn-sim {
       background: white; color: var(--primary-blue); border: none; padding: 6px 12px;
       border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s;
@@ -46,7 +46,7 @@
     /* App Layout */
     .app-container { display: flex; flex: 1; overflow: hidden; }
 
-    /* Sidebar */
+    /* Sidebar Folder Navigation */
     .sidebar { width: 230px; background: #f3f2f1; border-right: 1px solid var(--border-color); padding: 12px 0; display: flex; flex-direction: column; }
     .folder-item {
       display: flex; justify-content: space-between; align-items: center;
@@ -102,14 +102,14 @@
     }
     .attachment-box:hover { background: #f0f6ff; border-color: var(--primary-blue); }
 
-    /* Browser Link Hover Preview Bar */
+    /* Status Bar */
     .status-bar {
       height: 26px; background: #f3f2f1; border-top: 1px solid var(--border-color);
       padding: 0 12px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center;
       font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Modal Styling */
+    /* Modal Overlay & Cards */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
@@ -126,7 +126,7 @@
     .close-btn { cursor: pointer; border: none; background: none; font-size: 18px; color: #ccc; }
     .close-btn:hover { color: white; }
 
-    /* Realistic PDF Invoice Layout inside Modal */
+    /* PDF Invoice Layout inside Modal */
     .pdf-viewer-bg { background: #525659; padding: 24px; display: flex; justify-content: center; }
     .pdf-paper {
       background: white; width: 100%; max-width: 600px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
@@ -145,10 +145,15 @@
     .invoice-total-table .grand-total { font-weight: bold; font-size: 14px; border-top: 2px solid #333; }
     .invoice-footer { border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #666; text-align: center; }
 
-    /* Instructions Modal Custom Styling */
     .instructions-list { margin: 16px 0; padding-left: 20px; }
     .instructions-list li { margin-bottom: 10px; }
     .instruction-badge { display: inline-block; padding: 2px 6px; border-radius: 4px; font-weight: 600; font-size: 11px; }
+
+    /* Daily Alert Banner */
+    .daily-banner {
+      background: #fff4ce; color: #323130; padding: 8px 16px; font-size: 12px; border-bottom: 1px solid #f2e2a2;
+      display: none; align-items: center; justify-content: space-between; font-weight: 500;
+    }
 
     .empty-state { display: flex; height: 100%; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; }
   </style>
@@ -159,23 +164,25 @@
   <div class="modal-overlay" id="instructions-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <span>📘 RuinScam Email Phishing Simulator — Training Guide</span>
+        <span>📘 RuinScam Email Phishing Simulator — Instructions</span>
         <button class="close-btn" onclick="closeInstructions()">✕</button>
       </div>
       <div class="modal-body">
-        <h3 style="font-size:16px; margin-bottom:8px; color:var(--primary-blue);">Welcome to the Phishing Awareness Simulator</h3>
-        <p>This simulator tests your ability to inspect webmail messages and catch sophisticated social engineering attacks before they compromise your network.</p>
+        <h3 style="font-size:16px; margin-bottom:8px; color:var(--primary-blue);">How to Use This Simulator</h3>
+        <p>This webmail security simulator tests your ability to spot social engineering attacks, domain spoofing, and malicious attachments before making a mistake.</p>
         
         <ul class="instructions-list">
-          <li><strong>25 Emails per Batch:</strong> Each 7-day cycle delivers exactly <strong>25 emails</strong> (40% Phishing, 60% Legitimate) mixed in complete random order.</li>
-          <li><strong>Inspect Sender Addresses:</strong> Look closely for sneaky typosquatting tricks like <code style="background:#eee; padding:2px 4px;">quickbo0ks</code> (zero instead of 'o'), <code style="background:#eee; padding:2px 4px;">paypaI</code> (capital 'I' instead of 'l'), or <code style="background:#eee; padding:2px 4px;">rnicro</code> ('r' + 'n' mimicking 'm').</li>
-          <li><strong>Hover Over Links:</strong> Place your cursor over body links to view the real target URL in the bottom status bar. Compare the visible text with the raw destination URL.</li>
-          <li><strong>Inspect PDF Invoices:</strong> Click on PDF attachments to open authentic PDF document previews. Look for unexpected line items, fraudulent vendor domains, or demands for immediate wire settlement.</li>
-          <li><strong>Take Action:</strong> Use the top action bar to click <span class="instruction-badge" style="background:#fde8e8; color:#d13438;">🚩 Report Phishing</span> to send threats to Junk/Spam, or <span class="instruction-badge" style="background:#e6f4ea; color:#107c41;">✅ Mark as Safe</span> for legitimate correspondence.</li>
+          <li><strong>Initial Setup & Daily Additions:</strong> You start with <strong>25 emails</strong> (40% Phishing, 60% Legitimate). Automatically, <strong>3 new phishing emails</strong> are added every 24 hours to simulate a live corporate inbox.</li>
+          <li><strong>Persistent User Cache & Retention:</strong> All folder states and email selections stay cached per browser. On every new week cycle, emails marked as <em>Safe</em> or <em>Phishing</em> are cleaned out, but your <strong>Training Performance stats are retained indefinitely</strong>.</li>
+          <li><strong>Inspect Sender Addresses:</strong> Look out for sneaky typosquatting tricks like <code style="background:#eee; padding:2px 4px;">quickbo0ks</code> (zero instead of 'o'), <code style="background:#eee; padding:2px 4px;">paypaI</code> (capital 'I' instead of 'l'), or <code style="background:#eee; padding:2px 4px;">rnicro</code> ('r' + 'n' mimicking 'm').</li>
+          <li><strong>Hover Over Links:</strong> Place your cursor over body links to preview the destination URL in the status bar at the bottom. Compare the link text with where it actually points.</li>
+          <li><strong>Inspect PDF Invoices:</strong> Click PDF attachments to open authentic PDF document previews. Look for fraudulent vendor names, excessive charges, or suspicious payment gateways.</li>
+          <li><strong>Take Action:</strong> Click <span class="instruction-badge" style="background:#fde8e8; color:#d13438;">🚩 Report Phishing</span> for threats or <span class="instruction-badge" style="background:#e6f4ea; color:#107c41;">✅ Mark as Safe</span> for legitimate emails.</li>
         </ul>
 
-        <div style="text-align:right; margin-top:20px;">
-          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeInstructions()">Start Training Simulation 🚀</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+          <button class="btn-action" style="color:var(--spam-color); border-color:#f8b4b4;" onclick="resetLocalStorage()">🔄 Reset All Progress & Stats</button>
+          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeInstructions()">Start Simulator 🚀</button>
         </div>
       </div>
     </div>
@@ -188,11 +195,17 @@
       RuinScam Email Phishing Simulator
     </div>
     <div class="sim-controls">
-      <span>Batch Cycle: <strong id="cycle-display">Week 1</strong></span>
+      <span>Cycle: <strong id="cycle-display">Week 1</strong></span>
       <span>Total Emails: <strong id="total-emails-display">25</strong></span>
       <button class="btn-sim-alt" onclick="openInstructions()">❓ Instructions</button>
-      <button class="btn-sim" id="btn-advance-week">New 7-Day Cycle ⏩</button>
+      <button class="btn-sim" id="btn-advance-week">New 7-Day Batch ⏩</button>
     </div>
+  </div>
+
+  <!-- Daily Alert Banner -->
+  <div class="daily-banner" id="daily-banner">
+    <span id="daily-banner-text">📅 3 new daily phishing emails were automatically delivered to your inbox!</span>
+    <button style="border:none; background:none; cursor:pointer; font-size:14px;" onclick="document.getElementById('daily-banner').style.display='none'">✕</button>
   </div>
 
   <!-- Main Container -->
@@ -226,7 +239,7 @@
 
     <!-- Reading Pane -->
     <div class="reading-pane" id="reading-pane">
-      <div class="empty-state" id="empty-state">Select an email to inspect headers, hover links, and PDF invoice attachments.</div>
+      <div class="empty-state" id="empty-state">Select an email to inspect headers, hover links, and PDF attachments.</div>
       
       <div id="email-view" style="display:none; flex-direction:column; height:100%;">
         <div class="action-bar">
@@ -267,18 +280,24 @@
   </div>
 
   <script>
-    let currentWeek = 1;
-    let activeFolder = 'inbox';
-    let selectedEmailId = null;
+    const STORAGE_KEY = 'ruinscam_email_sim_v3';
 
-    let stats = { caught: 0, falsePositives: 0 };
-    let emails = [];
+    // App State Structure
+    let appState = {
+      currentWeek: 1,
+      lastCheckTime: Date.now(),
+      stats: { caught: 0, falsePositives: 0 }, // Retained indefinitely per user
+      emails: [],
+      hasSeenInstructions: false,
+      activeFolder: 'inbox',
+      selectedEmailId: null
+    };
 
-    // --- Master Phishing Templates (10 distinct scenarios with typosquatting, urgency, link traps) ---
+    // --- Master Phishing Templates ---
     const phishingTemplates = [
       {
         senderName: "QuickBooks Invoicing",
-        senderEmail: "invoicing@quickbo0ks-billing-update.com", // Typosquatting: bo0ks
+        senderEmail: "invoicing@quickbo0ks-billing-update.com",
         subject: "OVERDUE INVOICE #90842 - Immediate Action Required",
         snippet: "Your account is past due by 15 days. Review the attached PDF invoice immediately.",
         body: `<p>Dear Customer,</p><p>Your account invoice <strong>#90842</strong> is past due. Unpaid balances will incur an immediate 15% late fee penalty after 24 hours.</p><p>Please <a href="http://login-quickbo0ks-verify-billing.net/pay/90842" class="sim-link">Click Here to Pay Invoice Online</a> or review the attached invoice manifest.</p>`,
@@ -300,7 +319,7 @@
       },
       {
         senderName: "Microsoft Security Team",
-        senderEmail: "no-reply@micros0ft-account-alerts.info", // Typosquatting: micros0ft
+        senderEmail: "no-reply@micros0ft-account-alerts.info",
         subject: "Security Alert: Unusual sign-in activity detected",
         snippet: "Unusual login attempt from Moscow, Russia detected on your Microsoft account.",
         body: `<p>We detected an unauthorized login attempt from IP 185.220.101.5 (Moscow, Russia).</p><p>If this was not you, reset your password immediately via the security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">https://account.microsoft.com/security/reset-auth</a></p>`,
@@ -308,7 +327,7 @@
       },
       {
         senderName: "PayPal Fraud Department",
-        senderEmail: "service@paypaI-support-center.com", // Typosquatting: Capital I instead of l
+        senderEmail: "service@paypaI-support-center.com",
         subject: "Notice: Payment of $1,299.00 sent to CryptoExchange Inc.",
         snippet: "You authorized a payment of $1,299.00 USD. If you did not make this purchase, click inside.",
         body: `<p>You sent a payment of <strong>$1,299.00 USD</strong> to CryptoExchange Global LLC.</p><p>If you did not authorize this charge, dispute the transaction instantly:</p><p><a href="http://paypaI-support-center.com/dispute/tx90123" class="sim-link">Cancel Payment & Dispute Transaction</a></p>`,
@@ -316,7 +335,7 @@
       },
       {
         senderName: "Amazon Order Care",
-        senderEmail: "shipment-update@amzon-fulfillment-center.net", // Typosquatting: amzon
+        senderEmail: "shipment-update@amzon-fulfillment-center.net",
         subject: "Your order #114-890212-33910 has shipped: Apple MacBook Pro 16\"",
         snippet: "Order charged: $2,499.00. Delivered to address in Houston, TX.",
         body: `<p>Thank you for shopping with Amazon!</p><p>Item: <strong>Apple MacBook Pro 16" M3 Max</strong><br>Total Charged: $2,499.00</p><p>Did not order this item? <a href="http://amzon-fulfillment-center.net/cancel-order/114-890212" class="sim-link">Cancel Order & Request Full Refund</a></p>`,
@@ -337,7 +356,7 @@
       },
       {
         senderName: "IT Desk Support",
-        senderEmail: "helpdesk@rnicro-corp-support.com", // Typosquatting: rn instead of m
+        senderEmail: "helpdesk@rnicro-corp-support.com",
         subject: "URGENT: Corporate Email Password Expiration Notice",
         snippet: "Your webmail password expires in 2 hours. Click to maintain existing password.",
         body: `<p>Your webmail authentication credential will expire in 2 hours.</p><p>Failure to update will lock your account out of corporate webmail and VPN access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Current Password & Extend Expiration</a></p>`,
@@ -345,7 +364,7 @@
       },
       {
         senderName: "DocuSign Signature Desk",
-        senderEmail: "docusign@docusgn-signature-verify.org", // Typosquatting: docusgn
+        senderEmail: "docusign@docusgn-signature-verify.org",
         subject: "Please DocuSign: Executive Wire Transfer Authorization.pdf",
         snippet: "Chief Executive Officer has sent you a document to review and sign.",
         body: `<p>Please review and sign the attached urgent financial compliance authorization document.</p><p><a href="http://docusgn-signature-verify.org/document/sign/8912" class="sim-link">View Document on DocuSign Security Server</a></p>`,
@@ -366,7 +385,7 @@
       },
       {
         senderName: "DHL Express Logistics",
-        senderEmail: "tracking@dhi-express-logistics.com", // Typosquatting: dhi (letter i)
+        senderEmail: "tracking@dhi-express-logistics.com",
         subject: "Delivery Delay: Address Verification Required for Parcel #49021",
         snippet: "Parcel #49021 cannot be delivered. Review PDF manifest and confirm address.",
         body: `<p>We were unable to deliver package #49021 due to an incomplete delivery address.</p><p>Review the shipping document and update your delivery information within 24 hours:</p><p><a href="http://dhi-express-logistics.com/address-confirm" class="sim-link">Confirm Delivery Address & Reschedule</a></p>`,
@@ -408,7 +427,7 @@
       },
       {
         senderName: "HR Payroll Department",
-        senderEmail: "payroll@company-hr-portal-benefits.net", // Fake external domain
+        senderEmail: "payroll@company-hr-portal-benefits.net",
         subject: "IMPORTANT: Direct Deposit Account Verification Needed",
         snippet: "Please verify your bank details before the upcoming payroll run.",
         body: `<p>Due to system migration, employees must re-verify direct deposit credentials prior to Friday's payroll run.</p><p><a href="http://company-hr-portal-benefits.net/verify-payroll" class="sim-link">Update Direct Deposit Information</a></p>`,
@@ -416,7 +435,7 @@
       },
       {
         senderName: "Zoom Video Network",
-        senderEmail: "no-reply@zoom-us-meeting-join.net", // Fake domain zoom-us
+        senderEmail: "no-reply@zoom-us-meeting-join.net",
         subject: "Missed Executive Call: View Meeting Recording & Transcript",
         snippet: "You missed an urgent team meeting hosted by Management.",
         body: `<p>You missed an audio/video conference meeting.</p><p><strong>Meeting Topic:</strong> Q3 Restructuring & Payroll Changes<br><strong>Recording Length:</strong> 14 mins</p><p><a href="http://zoom-us-meeting-join.net/recording/play?id=9012" class="sim-link">Play Voice Recording & Download Transcript</a></p>`,
@@ -424,7 +443,7 @@
       }
     ];
 
-    // --- Master Legitimate Templates (15 distinct scenarios) ---
+    // --- Master Legitimate Templates ---
     const legitTemplates = [
       {
         senderName: "HR Department",
@@ -574,31 +593,96 @@
       }
     ];
 
-    // --- Generation Engine: Exactly 25 Emails (10 Phishing = 40%, 15 Legit = 60%) ---
-    function generateWeeklyInbox() {
-      emails = [];
-      const phishingCount = 10; // Exactly 40%
-      const legitCount = 15;    // Exactly 60%
+    // --- Persistence & Caching Operations ---
+    function saveToLocalStorage() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {
+        console.error("Local storage caching error:", e);
+      }
+    }
 
-      // Pick 10 Phishing templates
+    function loadFromLocalStorage() {
+      try {
+        const data = localStorage.getItem(STORAGE_KEY);
+        if (data) {
+          const parsed = JSON.parse(data);
+          appState = Object.assign({}, appState, parsed);
+          return true;
+        }
+      } catch (e) {
+        console.error("Local storage loading error:", e);
+      }
+      return false;
+    }
+
+    function resetLocalStorage() {
+      if (confirm("Are you sure you want to reset all your cached emails, folders, and performance statistics?")) {
+        localStorage.removeItem(STORAGE_KEY);
+        appState = {
+          currentWeek: 1,
+          lastCheckTime: Date.now(),
+          stats: { caught: 0, falsePositives: 0 },
+          emails: [],
+          hasSeenInstructions: true,
+          activeFolder: 'inbox',
+          selectedEmailId: null
+        };
+        appState.emails = generateNewBatchOfEmails();
+        saveToLocalStorage();
+        closeInstructions();
+        renderApp();
+      }
+    }
+
+    // --- Automatic Daily Addition Logic (3 Phishing / Day) ---
+    function processDailyAdditions() {
+      const now = Date.now();
+      const oneDayMs = 86400000;
+      const elapsedMs = now - appState.lastCheckTime;
+      const daysPassed = Math.floor(elapsedMs / oneDayMs);
+
+      if (daysPassed > 0) {
+        const numToAdd = daysPassed * 3;
+        let addedCount = 0;
+
+        for (let i = 0; i < numToAdd; i++) {
+          let template = phishingTemplates[Math.floor(Math.random() * phishingTemplates.length)];
+          let newEmail = createEmailObject(template, true);
+          newEmail.date = 'Today';
+          appState.emails.unshift(newEmail);
+          addedCount++;
+        }
+
+        appState.lastCheckTime = now;
+        saveToLocalStorage();
+
+        const banner = document.getElementById('daily-banner');
+        const bannerText = document.getElementById('daily-banner-text');
+        bannerText.innerText = `📅 ${addedCount} new daily phishing email(s) automatically arrived in your inbox!`;
+        banner.style.display = 'flex';
+      }
+    }
+
+    // --- Email Batch Generation ---
+    function generateNewBatchOfEmails() {
+      const batch = [];
+      const phishingCount = 10; // 40%
+      const legitCount = 15;    // 60%
+
       let shuffledPhish = [...phishingTemplates].sort(() => Math.random() - 0.5);
       for (let i = 0; i < phishingCount; i++) {
         let template = shuffledPhish[i % shuffledPhish.length];
-        emails.push(createEmailObject(template, true));
+        batch.push(createEmailObject(template, true));
       }
 
-      // Pick 15 Legitimate templates
       let shuffledLegit = [...legitTemplates].sort(() => Math.random() - 0.5);
       for (let i = 0; i < legitCount; i++) {
         let template = shuffledLegit[i % shuffledLegit.length];
-        emails.push(createEmailObject(template, false));
+        batch.push(createEmailObject(template, false));
       }
 
-      // Shuffle all 25 emails thoroughly
-      emails.sort(() => Math.random() - 0.5);
-
-      selectedEmailId = null;
-      renderApp();
+      return batch.sort(() => Math.random() - 0.5);
     }
 
     function createEmailObject(template, isPhishing) {
@@ -620,16 +704,18 @@
 
     // --- GUI Render Engine ---
     function renderApp() {
-      const inboxList = emails.filter(e => e.folder === 'inbox');
-      const spamList = emails.filter(e => e.folder === 'spam');
-      const safeList = emails.filter(e => e.folder === 'safe');
+      const inboxList = appState.emails.filter(e => e.folder === 'inbox');
+      const spamList = appState.emails.filter(e => e.folder === 'spam');
+      const safeList = appState.emails.filter(e => e.folder === 'safe');
 
       document.getElementById('inbox-count').innerText = inboxList.length;
       document.getElementById('spam-count').innerText = spamList.length;
       document.getElementById('safe-count').innerText = safeList.length;
+      document.getElementById('total-emails-display').innerText = appState.emails.length;
+      document.getElementById('cycle-display').innerText = `Week ${appState.currentWeek}`;
 
       const listContainer = document.getElementById('email-list');
-      const filteredEmails = emails.filter(e => e.folder === activeFolder);
+      const filteredEmails = appState.emails.filter(e => e.folder === appState.activeFolder);
       
       listContainer.innerHTML = '';
 
@@ -638,7 +724,7 @@
       } else {
         filteredEmails.forEach(email => {
           const item = document.createElement('div');
-          item.className = `email-item ${email.id === selectedEmailId ? 'selected' : ''}`;
+          item.className = `email-item ${email.id === appState.selectedEmailId ? 'selected' : ''}`;
           item.onclick = () => selectEmail(email.id);
           item.innerHTML = `
             <div class="sender">
@@ -652,7 +738,7 @@
         });
       }
 
-      const selected = emails.find(e => e.id === selectedEmailId);
+      const selected = appState.emails.find(e => e.id === appState.selectedEmailId);
       const emptyState = document.getElementById('empty-state');
       const emailView = document.getElementById('email-view');
 
@@ -677,13 +763,12 @@
               <svg width="24" height="24" viewBox="0 0 24 24" fill="#d13438"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm12 6V9c0-.55-.45-1-1-1h-2v6h2c.55 0 1-.45 1-1zm-2-2h1v2h-1v-2z"/></svg>
               <div>
                 <strong style="font-size:13px;">${escapeHtml(selected.attachmentName)}</strong>
-                <div style="font-size:11px; color:var(--text-muted);">PDF Document Attachment • Click to inspect invoice</div>
+                <div style="font-size:11px; color:var(--text-muted);">PDF Attachment • Click to inspect document</div>
               </div>
             </div>
           `;
         }
 
-        // Link hover inspection binding
         setTimeout(() => {
           const links = document.querySelectorAll('#view-body a');
           const statusBar = document.getElementById('link-status-bar');
@@ -705,46 +790,50 @@
         }, 50);
       }
 
-      document.getElementById('stat-caught').innerText = stats.caught;
-      document.getElementById('stat-fp').innerText = stats.falsePositives;
-      const totalProcessed = stats.caught + stats.falsePositives;
-      const accuracy = totalProcessed === 0 ? 100 : Math.round((stats.caught / totalProcessed) * 100);
+      // Render Retained Indefinite Stats
+      document.getElementById('stat-caught').innerText = appState.stats.caught;
+      document.getElementById('stat-fp').innerText = appState.stats.falsePositives;
+      const totalProcessed = appState.stats.caught + appState.stats.falsePositives;
+      const accuracy = totalProcessed === 0 ? 100 : Math.round((appState.stats.caught / totalProcessed) * 100);
       document.getElementById('stat-accuracy').innerText = accuracy + '%';
     }
 
     function switchFolder(folder) {
-      activeFolder = folder;
+      appState.activeFolder = folder;
       document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
       document.getElementById(`folder-${folder}`).classList.add('active');
-      selectedEmailId = null;
+      appState.selectedEmailId = null;
+      saveToLocalStorage();
       renderApp();
     }
 
     function selectEmail(id) {
-      selectedEmailId = id;
+      appState.selectedEmailId = id;
+      saveToLocalStorage();
       renderApp();
     }
 
     function reportCurrentPhishing() {
-      if (!selectedEmailId) return;
-      const email = emails.find(e => e.id === selectedEmailId);
+      if (!appState.selectedEmailId) return;
+      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
       if (email) {
         email.folder = 'spam';
         if (email.isPhishing) {
-          stats.caught++;
+          appState.stats.caught++;
           alert('Correct! That email was a phishing attempt and has been moved to Junk / Spam.');
         } else {
-          stats.falsePositives++;
+          appState.stats.falsePositives++;
           alert('False Alarm: That email was legitimate.');
         }
-        selectedEmailId = null;
+        appState.selectedEmailId = null;
+        saveToLocalStorage();
         renderApp();
       }
     }
 
     function markCurrentSafe() {
-      if (!selectedEmailId) return;
-      const email = emails.find(e => e.id === selectedEmailId);
+      if (!appState.selectedEmailId) return;
+      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
       if (email) {
         email.folder = 'safe';
         if (email.isPhishing) {
@@ -752,21 +841,23 @@
         } else {
           alert('Verified: Email marked as safe.');
         }
-        selectedEmailId = null;
+        appState.selectedEmailId = null;
+        saveToLocalStorage();
         renderApp();
       }
     }
 
     function deleteCurrentEmail() {
-      if (!selectedEmailId) return;
-      emails = emails.filter(e => e.id !== selectedEmailId);
-      selectedEmailId = null;
+      if (!appState.selectedEmailId) return;
+      appState.emails = appState.emails.filter(e => e.id !== appState.selectedEmailId);
+      appState.selectedEmailId = null;
+      saveToLocalStorage();
       renderApp();
     }
 
-    // --- PDF Invoice Modal Preview ---
+    // --- PDF Modal Preview ---
     function previewAttachment(id) {
-      const email = emails.find(e => e.id === id);
+      const email = appState.emails.find(e => e.id === id);
       if (!email || !email.hasAttachment || !email.invoiceData) return;
 
       const modal = document.getElementById('doc-modal');
@@ -869,23 +960,61 @@
     }
 
     function closeInstructions() {
+      appState.hasSeenInstructions = true;
+      saveToLocalStorage();
       document.getElementById('instructions-modal').style.display = 'none';
     }
 
-    // --- 7-Day Cycle Automation ---
+    // --- Weekly Cycle Reset Logic ---
     document.getElementById('btn-advance-week').onclick = () => {
-      currentWeek++;
-      document.getElementById('cycle-display').innerText = `Week ${currentWeek}`;
-      generateWeeklyInbox();
-      alert(`New 7-Day Cycle Started!\n\nInbox refreshed with 25 new emails (10 Phishing, 15 Legitimate).`);
+      appState.currentWeek++;
+      
+      // 1. Delete emails already marked safe or phishing (junk/spam)
+      appState.emails = appState.emails.filter(e => e.folder !== 'safe' && e.folder !== 'spam');
+      
+      // 2. Generate a fresh new weekly batch of 25 emails for the inbox
+      const newBatch = generateNewBatchOfEmails();
+      appState.emails = newBatch;
+
+      // 3. Keep stats, reset selected view, save state
+      appState.selectedEmailId = null;
+      appState.activeFolder = 'inbox';
+      
+      saveToLocalStorage();
+      
+      // Update UI active tab state
+      document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('folder-inbox').classList.add('active');
+      
+      renderApp();
+      alert(`New 7-Day Cycle Started!\n\n• Emails marked Safe or Phishing were removed.\n• Inbox refreshed with 25 new emails.\n• Your Training Performance stats have been preserved indefinitely!`);
     };
 
     function escapeHtml(str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
-    // Initialize Cycle
-    generateWeeklyInbox();
+    // --- Application Initialization ---
+    const hasData = loadFromLocalStorage();
+    if (!hasData) {
+      appState.emails = generateNewBatchOfEmails();
+      saveToLocalStorage();
+      openInstructions();
+    } else {
+      if (!appState.hasSeenInstructions) {
+        openInstructions();
+      } else {
+        closeInstructions();
+      }
+      processDailyAdditions();
+    }
+
+    // Restore folder highlight state on refresh
+    document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
+    const activeNav = document.getElementById(`folder-${appState.activeFolder}`);
+    if (activeNav) activeNav.classList.add('active');
+
+    renderApp();
   </script>
 </body>
 </html>
