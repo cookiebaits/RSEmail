@@ -14,6 +14,9 @@
       --text-muted: #605e5c;
       --spam-color: #d13438;
       --safe-color: #107c41;
+      --warning-bg: #fff4ce;
+      --danger-bg: #fde8e8;
+      --success-bg: #e6f4ea;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -81,9 +84,9 @@
       border-radius: 4px; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 6px;
     }
     .btn-action:hover { background: #f3f2f1; }
-    .btn-report { background: #fde8e8; color: var(--spam-color); border-color: #f8b4b4; font-weight: 600; }
+    .btn-report { background: var(--danger-bg); color: var(--spam-color); border-color: #f8b4b4; font-weight: 600; }
     .btn-report:hover { background: #fbd5d5; }
-    .btn-safe { background: #e6f4ea; color: var(--safe-color); border-color: #a8dab5; font-weight: 600; }
+    .btn-safe { background: var(--success-bg); color: var(--safe-color); border-color: #a8dab5; font-weight: 600; }
     .btn-safe:hover { background: #ceebd5; }
 
     .email-content { padding: 24px; overflow-y: auto; flex: 1; }
@@ -109,7 +112,7 @@
       font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Modal Overlay & Cards */
+    /* Modals */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; z-index: 1000;
@@ -125,6 +128,24 @@
     .modal-body { padding: 28px; font-size: 13px; line-height: 1.6; max-height: 80vh; overflow-y: auto; }
     .close-btn { cursor: pointer; border: none; background: none; font-size: 18px; color: #ccc; }
     .close-btn:hover { color: white; }
+
+    /* Educational Feedback Box */
+    .feedback-banner {
+      padding: 14px 18px; border-radius: 6px; margin-bottom: 20px; display: flex; align-items: flex-start; gap: 12px;
+      font-size: 14px; font-weight: 600;
+    }
+    .feedback-banner.incorrect { background: var(--danger-bg); color: var(--spam-color); border: 1px solid #f8b4b4; }
+    .feedback-banner.correct { background: var(--success-bg); color: var(--safe-color); border: 1px solid #a8dab5; }
+
+    .red-flags-card {
+      background: #faf9f8; border: 1px solid var(--border-color); border-radius: 6px; padding: 16px; margin: 16px 0;
+    }
+    .red-flags-card h4 { font-size: 13px; text-transform: uppercase; color: var(--text-muted); margin-bottom: 10px; letter-spacing: 0.5px; }
+    .flag-item {
+      display: flex; gap: 10px; margin-bottom: 12px; font-size: 13px; align-items: flex-start;
+    }
+    .flag-item:last-child { margin-bottom: 0; }
+    .flag-icon { font-size: 16px; }
 
     /* PDF Invoice Layout inside Modal */
     .pdf-viewer-bg { background: #525659; padding: 24px; display: flex; justify-content: center; }
@@ -174,15 +195,37 @@
         <ul class="instructions-list">
           <li><strong>Initial Setup & Daily Additions:</strong> You start with <strong>25 emails</strong> (40% Phishing, 60% Legitimate). Automatically, <strong>3 new phishing emails</strong> are added every 24 hours to simulate a live corporate inbox.</li>
           <li><strong>Persistent User Cache & Retention:</strong> All folder states and email selections stay cached per browser. On every new week cycle, emails marked as <em>Safe</em> or <em>Phishing</em> are cleaned out, but your <strong>Training Performance stats are retained indefinitely</strong>.</li>
+          <li><strong>Interactive Educational Feedback:</strong> If you mark an email incorrectly, the simulator will instantly break down the exact red flags you missed or explain why a legitimate message was safe.</li>
           <li><strong>Inspect Sender Addresses:</strong> Look out for sneaky typosquatting tricks like <code style="background:#eee; padding:2px 4px;">quickbo0ks</code> (zero instead of 'o'), <code style="background:#eee; padding:2px 4px;">paypaI</code> (capital 'I' instead of 'l'), or <code style="background:#eee; padding:2px 4px;">rnicro</code> ('r' + 'n' mimicking 'm').</li>
           <li><strong>Hover Over Links:</strong> Place your cursor over body links to preview the destination URL in the status bar at the bottom. Compare the link text with where it actually points.</li>
           <li><strong>Inspect PDF Invoices:</strong> Click PDF attachments to open authentic PDF document previews. Look for fraudulent vendor names, excessive charges, or suspicious payment gateways.</li>
-          <li><strong>Take Action:</strong> Click <span class="instruction-badge" style="background:#fde8e8; color:#d13438;">🚩 Report Phishing</span> for threats or <span class="instruction-badge" style="background:#e6f4ea; color:#107c41;">✅ Mark as Safe</span> for legitimate emails.</li>
         </ul>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
           <button class="btn-action" style="color:var(--spam-color); border-color:#f8b4b4;" onclick="resetLocalStorage()">🔄 Reset All Progress & Stats</button>
           <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeInstructions()">Start Simulator 🚀</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Educational Feedback Modal (Shown when user classifies an email) -->
+  <div class="modal-overlay" id="feedback-modal" style="display:none;">
+    <div class="modal-card">
+      <div class="modal-header" id="feedback-modal-header">
+        <span id="feedback-modal-title">Security Analysis Feedback</span>
+        <button class="close-btn" onclick="closeFeedbackModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="feedback-banner" class="feedback-banner"></div>
+
+        <div class="red-flags-card">
+          <h4 id="feedback-card-heading">Key Technical Indicators & Analysis</h4>
+          <div id="feedback-flags-list"></div>
+        </div>
+
+        <div style="text-align:right; margin-top:20px;">
+          <button class="btn-sim" style="background:var(--primary-blue); color:white; padding:10px 20px; font-size:14px;" onclick="closeFeedbackModal()">Continue Training ⏩</button>
         </div>
       </div>
     </div>
@@ -280,20 +323,20 @@
   </div>
 
   <script>
-    const STORAGE_KEY = 'ruinscam_email_sim_v3';
+    const STORAGE_KEY = 'ruinscam_email_sim_v4';
 
     // App State Structure
     let appState = {
       currentWeek: 1,
       lastCheckTime: Date.now(),
-      stats: { caught: 0, falsePositives: 0 }, // Retained indefinitely per user
+      stats: { caught: 0, falsePositives: 0 },
       emails: [],
       hasSeenInstructions: false,
       activeFolder: 'inbox',
       selectedEmailId: null
     };
 
-    // --- Master Phishing Templates ---
+    // --- Master Phishing Templates with Highlighted Educational Indicators ---
     const phishingTemplates = [
       {
         senderName: "QuickBooks Invoicing",
@@ -315,7 +358,12 @@
           ],
           subtotal: "$2,695.00", tax: "$0.00", grandTotal: "$2,695.00",
           paymentLink: "http://login-quickbo0ks-verify-billing.net/checkout"
-        }
+        },
+        redFlags: [
+          { title: "Typosquatted Sender Address", desc: "The sender domain uses 'quickbo0ks' (with a number '0' replacing 'o') instead of the official quickbooks.com domain." },
+          { title: "Deceptive Payment Gateway", desc: "The invoice button links to an external unverified domain 'login-quickbo0ks-verify-billing.net' over unencrypted HTTP." },
+          { title: "Artificial Urgency & Fear Tactics", desc: "Threatens an immediate 15% late penalty within 24 hours to force quick action without verifying authenticity." }
+        ]
       },
       {
         senderName: "Microsoft Security Team",
@@ -323,7 +371,12 @@
         subject: "Security Alert: Unusual sign-in activity detected",
         snippet: "Unusual login attempt from Moscow, Russia detected on your Microsoft account.",
         body: `<p>We detected an unauthorized login attempt from IP 185.220.101.5 (Moscow, Russia).</p><p>If this was not you, reset your password immediately via the security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">https://account.microsoft.com/security/reset-auth</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        redFlags: [
+          { title: "Mismatched Hyperlink Destination", desc: "The visible anchor text claims to point to 'account.microsoft.com', but the raw destination actually routes to 'micros0ft-security-auth.com'." },
+          { title: "Fake Domain Name", desc: "Microsoft security alerts always come from @microsoft.com domains, not 'micros0ft-account-alerts.info'." },
+          { title: "Scare Tactics Lure", desc: "Uses an alarming foreign login alert (Moscow, Russia) to incite panic and provoke an immediate password credential harvest." }
+        ]
       },
       {
         senderName: "PayPal Fraud Department",
@@ -331,7 +384,11 @@
         subject: "Notice: Payment of $1,299.00 sent to CryptoExchange Inc.",
         snippet: "You authorized a payment of $1,299.00 USD. If you did not make this purchase, click inside.",
         body: `<p>You sent a payment of <strong>$1,299.00 USD</strong> to CryptoExchange Global LLC.</p><p>If you did not authorize this charge, dispute the transaction instantly:</p><p><a href="http://paypaI-support-center.com/dispute/tx90123" class="sim-link">Cancel Payment & Dispute Transaction</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        redFlags: [
+          { title: "Lookalike Homograph Character", desc: "The email domain 'paypaI' uses a capital letter 'I' instead of a lowercase 'l' to mimic paypal.com." },
+          { title: "Unrecognized Transaction Pretext", desc: "Fabricates an expensive crypto charge to trick users into frantically logging in to cancel the transaction." }
+        ]
       },
       {
         senderName: "Amazon Order Care",
@@ -352,7 +409,12 @@
           ],
           subtotal: "$2,499.00", tax: "$199.92", grandTotal: "$2,698.92",
           paymentLink: "http://amzon-fulfillment-center.net/dispute"
-        }
+        },
+        redFlags: [
+          { title: "Misspelled Domain Name", desc: "Sender domain 'amzon-fulfillment-center.net' is missing the letter 'a' in Amazon." },
+          { title: "High-Value Order Bait", desc: "Claims an expensive $2,499 MacBook Pro was ordered to trigger immediate dispute clicks." },
+          { title: "Fake PDF Invoice Attachment", desc: "The attached PDF points to an unofficial dispute link designed to intercept payment details." }
+        ]
       },
       {
         senderName: "IT Desk Support",
@@ -360,7 +422,11 @@
         subject: "URGENT: Corporate Email Password Expiration Notice",
         snippet: "Your webmail password expires in 2 hours. Click to maintain existing password.",
         body: `<p>Your webmail authentication credential will expire in 2 hours.</p><p>Failure to update will lock your account out of corporate webmail and VPN access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Current Password & Extend Expiration</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        redFlags: [
+          { title: "Comboglyph / Visual Trickery", desc: "The domain 'rnicro' uses the letters 'r' and 'n' placed together to look like the letter 'm' in 'micro'." },
+          { title: "Short Expiration Window", desc: "Threatens a 2-hour account lockout to prevent users from checking with their real IT department." }
+        ]
       },
       {
         senderName: "DocuSign Signature Desk",
@@ -381,7 +447,11 @@
           ],
           subtotal: "$0.00", tax: "$0.00", grandTotal: "$0.00",
           paymentLink: "http://docusgn-signature-verify.org/sign"
-        }
+        },
+        redFlags: [
+          { title: "Missing Character Domain", desc: "Domain 'docusgn-signature-verify.org' is missing the letter 'i' from DocuSign." },
+          { title: "Executive Impersonation", desc: "Pretexts an urgent wire transfer authorization form purportedly from the CEO to exploit authority bias." }
+        ]
       },
       {
         senderName: "DHL Express Logistics",
@@ -402,7 +472,11 @@
           ],
           subtotal: "$4.95", tax: "$0.00", grandTotal: "$4.95",
           paymentLink: "http://dhi-express-logistics.com/pay-redelivery"
-        }
+        },
+        redFlags: [
+          { title: "Typo Domain Substitution", desc: "Sender address uses 'dhi' (with an 'i') instead of dhl.com." },
+          { title: "Redelivery Fee Smishing/Phishing", desc: "Asks for a small $4.95 payment fee to steal credit card details." }
+        ]
       },
       {
         senderName: "Geek Squad Renewals",
@@ -423,7 +497,11 @@
           ],
           subtotal: "$499.99", tax: "$39.99", grandTotal: "$539.98",
           paymentLink: "http://geeksquad-tech-renewals.info/cancel"
-        }
+        },
+        redFlags: [
+          { title: "Unrecognized Third-Party Domain", desc: "Sent from 'geeksquad-tech-renewals.info' rather than bestbuy.com or geeksquad.com." },
+          { title: "Refund Scam Trap", desc: "Classic tech support refund lure designed to redirect users to a fraudulent cancellation desk." }
+        ]
       },
       {
         senderName: "HR Payroll Department",
@@ -431,7 +509,11 @@
         subject: "IMPORTANT: Direct Deposit Account Verification Needed",
         snippet: "Please verify your bank details before the upcoming payroll run.",
         body: `<p>Due to system migration, employees must re-verify direct deposit credentials prior to Friday's payroll run.</p><p><a href="http://company-hr-portal-benefits.net/verify-payroll" class="sim-link">Update Direct Deposit Information</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        redFlags: [
+          { title: "External HR Domain", desc: "Sent from an external '.net' domain ('company-hr-portal-benefits.net') instead of the company's internal corporate domain." },
+          { title: "Credential Harvest Lure", desc: "Requests direct deposit bank information under the guise of an urgent system migration." }
+        ]
       },
       {
         senderName: "Zoom Video Network",
@@ -439,7 +521,11 @@
         subject: "Missed Executive Call: View Meeting Recording & Transcript",
         snippet: "You missed an urgent team meeting hosted by Management.",
         body: `<p>You missed an audio/video conference meeting.</p><p><strong>Meeting Topic:</strong> Q3 Restructuring & Payroll Changes<br><strong>Recording Length:</strong> 14 mins</p><p><a href="http://zoom-us-meeting-join.net/recording/play?id=9012" class="sim-link">Play Voice Recording & Download Transcript</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        redFlags: [
+          { title: "Non-Official Zoom Domain", desc: "Sent from 'zoom-us-meeting-join.net' instead of the official zoom.us domain." },
+          { title: "Restructuring Pretext", desc: "Uses sensitive topics like 'Q3 Restructuring & Payroll' to trigger emotional curiosity." }
+        ]
       }
     ];
 
@@ -451,7 +537,11 @@
         subject: "Reminder: Open Enrollment Deadline Next Friday",
         snippet: "Please ensure your healthcare benefits selection is finalized in the internal portal.",
         body: `<p>Hi Team,</p><p>This is a reminder that open enrollment for health benefits closes next Friday at 5:00 PM.</p><p>You can access the internal portal here: <a href="https://internal.company.com/hr/benefits" class="sim-link">Company HR Benefits Portal</a>.</p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Authentic Corporate Sender", desc: "Originates directly from the official internal domain 'hr@company.com'." },
+          { title: "Encrypted Internal Link", desc: "Uses an internal HTTPS secure link 'internal.company.com'." }
+        ]
       },
       {
         senderName: "GitHub Notifications",
@@ -459,7 +549,11 @@
         subject: "[GitHub] Dependabot Security Advisory Alert",
         snippet: "Dependabot opened a security vulnerability pull request in repo.",
         body: `<p>Dependabot detected 1 low severity vulnerability in project dependencies.</p><p>View security advisory details on <a href="https://github.com/security/advisories" class="sim-link">GitHub Security Hub</a>.</p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Official GitHub Domain", desc: "Sent from verified domain '@github.com'." },
+          { title: "Valid HTTPS URL", desc: "Links directly to github.com over SSL/TLS encryption." }
+        ]
       },
       {
         senderName: "Calendar System",
@@ -467,7 +561,10 @@
         subject: "Invitation: All-Hands Team Sync @ Mon 10am",
         snippet: "You have been invited to All-Hands Team Sync.",
         body: `<p>Organizer: Executive Leadership</p><p>Join Video Call: <a href="https://meet.company.com/all-hands-room" class="sim-link">https://meet.company.com/all-hands-room</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Legitimate Corporate Service", desc: "Uses standard internal meeting system and company domain name." }
+        ]
       },
       {
         senderName: "Acme Cloud Services",
@@ -488,7 +585,10 @@
           ],
           subtotal: "$42.00", tax: "$0.00", grandTotal: "$42.00",
           paymentLink: "https://acmecloud.com/portal/invoices"
-        }
+        },
+        safetyFeatures: [
+          { title: "Expected Service Billing", desc: "Valid vendor domain 'acmecloud.com' with matching HTTPS links." }
+        ]
       },
       {
         senderName: "Slack Team",
@@ -496,7 +596,10 @@
         subject: "Weekly Digest: Unread messages in #general",
         snippet: "Catch up on what you missed in your Slack workspace.",
         body: `<p>You have 14 unread messages across 3 channels.</p><p><a href="https://app.slack.com/client" class="sim-link">Open Slack Workspace</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Official Slack Communication", desc: "Domain 'slack.com' is legitimate and target link matches Slack web app." }
+        ]
       },
       {
         senderName: "Atlassian Jira",
@@ -504,7 +607,10 @@
         subject: "[Jira] Task Assigned: Fix Navigation Bar Mobile Responsiveness",
         snippet: "Lead Developer assigned ticket DEV-4091 to you.",
         body: `<p>Ticket <strong>DEV-4091</strong> has been assigned to you.</p><p>View details on <a href="https://company.atlassian.net/browse/DEV-4091" class="sim-link">Jira Board</a>.</p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Standard Atlassian Notification", desc: "Sent from official company cloud instance 'company.atlassian.net'." }
+        ]
       },
       {
         senderName: "Google Workspace",
@@ -512,7 +618,10 @@
         subject: "Monthly Storage Quota Summary Report",
         snippet: "Your team cloud storage utilization report is available.",
         body: `<p>Your team is currently using 45% of allocated Google Drive storage.</p><p><a href="https://admin.google.com/dashboard" class="sim-link">Manage Storage Settings</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Verified Google Domain", desc: "Sent from @google.com pointing directly to admin.google.com." }
+        ]
       },
       {
         senderName: "Internal IT Operations",
@@ -520,7 +629,10 @@
         subject: "Scheduled Maintenance Window: Saturday 2:00 AM EST",
         snippet: "VPN and core internal databases will undergo routine maintenance.",
         body: `<p>Please be advised that internal VPN systems will be offline for 1 hour this Saturday for patching.</p><p>Questions? Contact <a href="mailto:it-service@company.com">Internal IT Helpdesk</a>.</p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Internal IT Notice", desc: "Sent from internal email address without external links or credential requests." }
+        ]
       },
       {
         senderName: "Stripe Billing",
@@ -541,7 +653,10 @@
           ],
           subtotal: "$15.00", tax: "$0.00", grandTotal: "$15.00",
           paymentLink: "https://pay.stripe.com/receipts"
-        }
+        },
+        safetyFeatures: [
+          { title: "Authentic Stripe Receipt", desc: "Originates from invoices@stripe.com pointing to pay.stripe.com over HTTPS." }
+        ]
       },
       {
         senderName: "Figma Team",
@@ -549,7 +664,10 @@
         subject: "New comment on 'Mobile UI Component Library'",
         snippet: "Sarah left a comment: 'Great job on the updated color tokens!'",
         body: `<p>Sarah commented on <strong>Mobile UI Component Library</strong>:</p><p><em>"Great job on the updated color tokens!"</em></p><p><a href="https://figma.com/file/sample-id" class="sim-link">Open in Figma</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Standard Collaboration Alert", desc: "Uses official figma.com domain." }
+        ]
       },
       {
         senderName: "Amazon Web Services",
@@ -557,7 +675,10 @@
         subject: "AWS Billing Statement Available for Account #****-9012",
         snippet: "Your monthly AWS invoice is now available in Billing Console.",
         body: `<p>Your total AWS charges for last month: <strong>$128.40</strong>.</p><p><a href="https://console.aws.amazon.com/billing" class="sim-link">View AWS Billing Console</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Official AWS Billing", desc: "Sent from @amazonaws.com leading to console.aws.amazon.com." }
+        ]
       },
       {
         senderName: "Facilities Operations",
@@ -565,7 +686,10 @@
         subject: "Building Access Control & Security Badge Updates",
         snippet: "Please update your security keycard at building lobby desk.",
         body: `<p>All employees must update physical keycards by the end of the month.</p><p>Contact facilities directly at <a href="https://internal.company.com/facilities" class="sim-link">Internal Facilities Portal</a>.</p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Legitimate Facilities Routine", desc: "Internal sender address and verified portal link." }
+        ]
       },
       {
         senderName: "Notion Workspace",
@@ -573,7 +697,10 @@
         subject: "Page update: 'Q3 Product Roadmap'",
         snippet: "2 new updates were made to Q3 Product Roadmap.",
         body: `<p>Updates made in workspace:</p><p><a href="https://notion.so/workspace/q3-roadmap" class="sim-link">View Updates in Notion</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Official Notion Domain", desc: "Sent from notify@notion.so leading to notion.so." }
+        ]
       },
       {
         senderName: "Docker Security",
@@ -581,7 +708,10 @@
         subject: "Personal Access Token Created",
         snippet: "A new Personal Access Token was generated for your account.",
         body: `<p>A new token 'CI-Pipeline-Deploy' was created.</p><p><a href="https://hub.docker.com/settings/security" class="sim-link">Review Security Settings</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Authentic Security Audit Notice", desc: "Sent from @docker.com pointing to hub.docker.com." }
+        ]
       },
       {
         senderName: "LinkedIn Network",
@@ -589,11 +719,14 @@
         subject: "You have 2 new connection requests",
         snippet: "Alex Rivera and Taylor Smith requested to connect.",
         body: `<p>Expand your network on LinkedIn.</p><p><a href="https://linkedin.com/mynetwork" class="sim-link">View Connection Requests</a></p>`,
-        hasAttachment: false
+        hasAttachment: false,
+        safetyFeatures: [
+          { title: "Verified LinkedIn Email", desc: "Sent from official linkedin.com domain." }
+        ]
       }
     ];
 
-    // --- Persistence & Caching Operations ---
+    // --- Persistence & Caching ---
     function saveToLocalStorage() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
@@ -635,7 +768,7 @@
       }
     }
 
-    // --- Automatic Daily Addition Logic (3 Phishing / Day) ---
+    // --- Automatic Daily Addition Logic ---
     function processDailyAdditions() {
       const now = Date.now();
       const oneDayMs = 86400000;
@@ -698,8 +831,133 @@
         hasAttachment: template.hasAttachment,
         attachmentName: template.attachmentName,
         invoiceData: template.invoiceData,
+        redFlags: template.redFlags || [],
+        safetyFeatures: template.safetyFeatures || [],
         date: new Date(Date.now() - Math.floor(Math.random() * 6) * 86400000).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })
       };
+    }
+
+    // --- Educational Feedback Modal Functions ---
+    function showEducationalFeedback(isMistake, titleText, bannerMessage, itemsHeading, itemsList) {
+      const modal = document.getElementById('feedback-modal');
+      const modalHeader = document.getElementById('feedback-modal-header');
+      const modalTitle = document.getElementById('feedback-modal-title');
+      const banner = document.getElementById('feedback-banner');
+      const heading = document.getElementById('feedback-card-heading');
+      const flagsContainer = document.getElementById('feedback-flags-list');
+
+      modalTitle.innerText = titleText;
+      
+      if (isMistake) {
+        modalHeader.style.background = '#d13438';
+        banner.className = 'feedback-banner incorrect';
+        banner.innerHTML = `⚠️ <span>${escapeHtml(bannerMessage)}</span>`;
+      } else {
+        modalHeader.style.background = '#107c41';
+        banner.className = 'feedback-banner correct';
+        banner.innerHTML = `✅ <span>${escapeHtml(bannerMessage)}</span>`;
+      }
+
+      heading.innerText = itemsHeading;
+      flagsContainer.innerHTML = '';
+
+      if (!itemsList || itemsList.length === 0) {
+        flagsContainer.innerHTML = '<p style="color:var(--text-muted);">No specific indicators recorded for this message.</p>';
+      } else {
+        itemsList.forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'flag-item';
+          div.innerHTML = `
+            <span class="flag-icon">${isMistake ? '🚩' : '🛡️'}</span>
+            <div>
+              <strong>${escapeHtml(item.title)}</strong>
+              <div style="color:#444; margin-top:2px;">${escapeHtml(item.desc)}</div>
+            </div>
+          `;
+          flagsContainer.appendChild(div);
+        });
+      }
+
+      modal.style.display = 'flex';
+    }
+
+    function closeFeedbackModal() {
+      document.getElementById('feedback-modal').style.display = 'none';
+    }
+
+    // --- User Actions with Detailed Explanations ---
+    function reportCurrentPhishing() {
+      if (!appState.selectedEmailId) return;
+      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
+      if (!email) return;
+
+      email.folder = 'spam';
+
+      if (email.isPhishing) {
+        // Correct Action
+        appState.stats.caught++;
+        showEducationalFeedback(
+          false,
+          "Phishing Threat Identified!",
+          "Great job! You correctly identified and reported this phishing attempt.",
+          "Red Flags You Successfully Caught:",
+          email.redFlags
+        );
+      } else {
+        // Mistake: Reported Legitimate Email
+        appState.stats.falsePositives++;
+        showEducationalFeedback(
+          true,
+          "False Alarm: Legitimate Email Reported",
+          "Mistake: You reported a safe, legitimate email as phishing (False Positive).",
+          "Why This Email Was Actually Safe:",
+          email.safetyFeatures
+        );
+      }
+
+      appState.selectedEmailId = null;
+      saveToLocalStorage();
+      renderApp();
+    }
+
+    function markCurrentSafe() {
+      if (!appState.selectedEmailId) return;
+      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
+      if (!email) return;
+
+      email.folder = 'safe';
+
+      if (email.isPhishing) {
+        // Mistake: Marked Phishing as Safe
+        showEducationalFeedback(
+          true,
+          "Security Compromise: Phishing Threat Missed!",
+          "Critical Mistake: You marked a dangerous phishing email as Safe!",
+          "Red Flags You Missed in This Email:",
+          email.redFlags
+        );
+      } else {
+        // Correct Action
+        showEducationalFeedback(
+          false,
+          "Verified Safe Email",
+          "Correct! This was a legitimate email message.",
+          "Security Verification Features:",
+          email.safetyFeatures
+        );
+      }
+
+      appState.selectedEmailId = null;
+      saveToLocalStorage();
+      renderApp();
+    }
+
+    function deleteCurrentEmail() {
+      if (!appState.selectedEmailId) return;
+      appState.emails = appState.emails.filter(e => e.id !== appState.selectedEmailId);
+      appState.selectedEmailId = null;
+      saveToLocalStorage();
+      renderApp();
     }
 
     // --- GUI Render Engine ---
@@ -790,7 +1048,6 @@
         }, 50);
       }
 
-      // Render Retained Indefinite Stats
       document.getElementById('stat-caught').innerText = appState.stats.caught;
       document.getElementById('stat-fp').innerText = appState.stats.falsePositives;
       const totalProcessed = appState.stats.caught + appState.stats.falsePositives;
@@ -809,48 +1066,6 @@
 
     function selectEmail(id) {
       appState.selectedEmailId = id;
-      saveToLocalStorage();
-      renderApp();
-    }
-
-    function reportCurrentPhishing() {
-      if (!appState.selectedEmailId) return;
-      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
-      if (email) {
-        email.folder = 'spam';
-        if (email.isPhishing) {
-          appState.stats.caught++;
-          alert('Correct! That email was a phishing attempt and has been moved to Junk / Spam.');
-        } else {
-          appState.stats.falsePositives++;
-          alert('False Alarm: That email was legitimate.');
-        }
-        appState.selectedEmailId = null;
-        saveToLocalStorage();
-        renderApp();
-      }
-    }
-
-    function markCurrentSafe() {
-      if (!appState.selectedEmailId) return;
-      const email = appState.emails.find(e => e.id === appState.selectedEmailId);
-      if (email) {
-        email.folder = 'safe';
-        if (email.isPhishing) {
-          alert('Security Alert: You marked a phishing email as safe!');
-        } else {
-          alert('Verified: Email marked as safe.');
-        }
-        appState.selectedEmailId = null;
-        saveToLocalStorage();
-        renderApp();
-      }
-    }
-
-    function deleteCurrentEmail() {
-      if (!appState.selectedEmailId) return;
-      appState.emails = appState.emails.filter(e => e.id !== appState.selectedEmailId);
-      appState.selectedEmailId = null;
       saveToLocalStorage();
       renderApp();
     }
@@ -968,21 +1183,16 @@
     // --- Weekly Cycle Reset Logic ---
     document.getElementById('btn-advance-week').onclick = () => {
       appState.currentWeek++;
-      
-      // 1. Delete emails already marked safe or phishing (junk/spam)
       appState.emails = appState.emails.filter(e => e.folder !== 'safe' && e.folder !== 'spam');
       
-      // 2. Generate a fresh new weekly batch of 25 emails for the inbox
       const newBatch = generateNewBatchOfEmails();
       appState.emails = newBatch;
 
-      // 3. Keep stats, reset selected view, save state
       appState.selectedEmailId = null;
       appState.activeFolder = 'inbox';
       
       saveToLocalStorage();
       
-      // Update UI active tab state
       document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
       document.getElementById('folder-inbox').classList.add('active');
       
@@ -1009,7 +1219,6 @@
       processDailyAdditions();
     }
 
-    // Restore folder highlight state on refresh
     document.querySelectorAll('.folder-item').forEach(el => el.classList.remove('active'));
     const activeNav = document.getElementById(`folder-${appState.activeFolder}`);
     if (activeNav) activeNav.classList.add('active');
