@@ -3,17 +3,18 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Outlook Security & Phishing Training Simulator</title>
+  <title>RuinScam Email Phishing Simulator</title>
   <style>
     :root {
-      --outlook-blue: #0078d4;
-      --outlook-hover: #106ebe;
+      --primary-blue: #0078d4;
+      --primary-hover: #106ebe;
       --bg-light: #f3f2f1;
       --border-color: #e1dfdd;
       --text-dark: #323130;
       --text-muted: #605e5c;
       --spam-color: #d13438;
       --safe-color: #107c41;
+      --invoice-border: #cccccc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -22,7 +23,7 @@
     /* Top Navigation Bar */
     .top-bar {
       height: 48px;
-      background-color: var(--outlook-blue);
+      background-color: var(--primary-blue);
       color: white;
       display: flex;
       align-items: center;
@@ -33,7 +34,7 @@
     .brand { font-weight: 600; font-size: 16px; display: flex; align-items: center; gap: 10px; }
     .sim-controls { display: flex; align-items: center; gap: 16px; font-size: 13px; }
     .btn-sim {
-      background: white; color: var(--outlook-blue); border: none; padding: 6px 12px;
+      background: white; color: var(--primary-blue); border: none; padding: 6px 12px;
       border-radius: 4px; font-weight: 600; cursor: pointer; transition: background 0.2s;
     }
     .btn-sim:hover { background: #eff6fc; }
@@ -42,27 +43,27 @@
     .app-container { display: flex; flex: 1; overflow: hidden; }
 
     /* Left Sidebar */
-    .sidebar { width: 220px; background: #f3f2f1; border-right: 1px solid var(--border-color); padding: 12px 0; }
+    .sidebar { width: 230px; background: #f3f2f1; border-right: 1px solid var(--border-color); padding: 12px 0; display: flex; flex-direction: column; }
     .folder-item {
       display: flex; justify-content: space-between; align-items: center;
       padding: 10px 20px; cursor: pointer; font-size: 14px; color: var(--text-dark);
     }
     .folder-item:hover { background: #edebe9; }
-    .folder-item.active { background: #edebe9; font-weight: 600; border-left: 4px solid var(--outlook-blue); }
-    .badge { background: var(--outlook-blue); color: white; border-radius: 10px; padding: 2px 8px; font-size: 11px; }
+    .folder-item.active { background: #edebe9; font-weight: 600; border-left: 4px solid var(--primary-blue); }
+    .badge { background: var(--primary-blue); color: white; border-radius: 10px; padding: 2px 8px; font-size: 11px; }
 
-    .stats-panel { margin-top: 20px; padding: 16px; border-top: 1px solid var(--border-color); font-size: 12px; }
+    .stats-panel { margin-top: auto; padding: 16px; border-top: 1px solid var(--border-color); font-size: 12px; background: #faf9f8; }
     .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; }
 
     /* Email List Pane */
-    .email-list { width: 340px; border-right: 1px solid var(--border-color); background: white; overflow-y: auto; }
+    .email-list { width: 360px; border-right: 1px solid var(--border-color); background: white; overflow-y: auto; }
     .email-item {
       padding: 12px 16px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: background 0.15s;
     }
     .email-item:hover { background: #f3f2f1; }
-    .email-item.selected { background: #eff6fc; border-left: 4px solid var(--outlook-blue); }
-    .email-item .sender { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
-    .email-item .subject { font-size: 13px; color: var(--text-dark); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .email-item.selected { background: #eff6fc; border-left: 4px solid var(--primary-blue); }
+    .email-item .sender { font-weight: 600; font-size: 13px; margin-bottom: 2px; color: #201f1e; display: flex; justify-content: space-between; }
+    .email-item .subject { font-size: 13px; color: var(--text-dark); margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; }
     .email-item .snippet { font-size: 12px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
     /* Reading Pane */
@@ -85,62 +86,82 @@
     .email-header { margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 16px; }
     .email-header h2 { font-size: 20px; font-weight: 600; margin-bottom: 12px; }
     .sender-details { display: flex; justify-content: space-between; align-items: flex-start; font-size: 13px; }
-    .sender-addr { color: var(--text-muted); margin-top: 2px; }
+    .sender-addr { color: var(--text-muted); margin-top: 2px; font-family: monospace; }
 
     .email-body { font-size: 14px; line-height: 1.6; color: #201f1e; }
-    .email-body a { color: var(--outlook-blue); text-decoration: underline; cursor: pointer; }
+    .email-body a { color: var(--primary-blue); text-decoration: underline; cursor: pointer; }
 
     .attachment-box {
-      margin-top: 20px; padding: 12px; border: 1px dashed var(--border-color);
+      margin-top: 20px; padding: 12px 16px; border: 1px solid var(--border-color);
       border-radius: 6px; background: #faf9f8; display: inline-flex; align-items: center; gap: 12px; cursor: pointer;
+      transition: all 0.2s;
     }
-    .attachment-box:hover { background: #f3f2f1; border-color: var(--outlook-blue); }
+    .attachment-box:hover { background: #f0f6ff; border-color: var(--primary-blue); }
 
     /* Browser Link Hover Preview Bar */
     .status-bar {
-      height: 24px; background: #f3f2f1; border-top: 1px solid var(--border-color);
-      padding: 0 12px; font-size: 11px; color: var(--text-muted); display: flex; align-items: center;
+      height: 26px; background: #f3f2f1; border-top: 1px solid var(--border-color);
+      padding: 0 12px; font-size: 12px; color: var(--text-muted); display: flex; align-items: center;
       font-family: monospace; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
 
-    /* Document Preview Modal */
+    /* Authentic Document Preview Modal */
     .modal-overlay {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.5); display: none; justify-content: center; align-items: center; z-index: 1000;
+      background: rgba(0, 0, 0, 0.6); display: none; justify-content: center; align-items: center; z-index: 1000;
     }
     .modal-card {
-      background: white; width: 600px; max-width: 90%; border-radius: 8px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column;
+      background: white; width: 680px; max-width: 95%; border-radius: 8px;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.25); overflow: hidden; display: flex; flex-direction: column;
     }
     .modal-header {
-      padding: 12px 20px; background: #faf9f8; border-bottom: 1px solid var(--border-color);
-      display: flex; justify-content: space-between; align-items: center; font-weight: 600;
+      padding: 12px 20px; background: #2b2b2b; color: white;
+      display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 14px;
     }
-    .modal-body { padding: 24px; font-size: 13px; line-height: 1.5; max-height: 70vh; overflow-y: auto; }
-    .close-btn { cursor: pointer; border: none; background: none; font-size: 18px; color: var(--text-muted); }
+    .modal-body { padding: 32px; font-size: 13px; line-height: 1.5; max-height: 80vh; overflow-y: auto; background: #787878; display: flex; justify-content: center; }
+    .close-btn { cursor: pointer; border: none; background: none; font-size: 18px; color: #ccc; }
+    .close-btn:hover { color: white; }
+
+    /* PDF Invoice Stylings */
+    .pdf-paper {
+      background: white; width: 100%; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      font-family: Arial, Helvetica, sans-serif; color: #333;
+    }
+    .invoice-header-row { display: flex; justify-content: space-between; margin-bottom: 30px; border-bottom: 2px solid var(--primary-blue); padding-bottom: 16px; }
+    .invoice-title { font-size: 28px; font-weight: bold; color: var(--primary-blue); text-transform: uppercase; }
+    .invoice-meta { text-align: right; font-size: 12px; }
+    .invoice-addresses { display: flex; justify-content: space-between; margin-bottom: 30px; font-size: 12px; }
+    .invoice-table { width: 100%; border-collapse: collapse; margin-bottom: 24px; font-size: 12px; }
+    .invoice-table th { background: #f2f2f2; border: 1px solid #ddd; padding: 8px; text-align: left; }
+    .invoice-table td { border: 1px solid #ddd; padding: 8px; }
+    .invoice-total-section { display: flex; justify-content: flex-end; margin-bottom: 30px; }
+    .invoice-total-table { width: 240px; font-size: 12px; }
+    .invoice-total-table td { padding: 4px 8px; }
+    .invoice-total-table .grand-total { font-weight: bold; font-size: 14px; border-top: 2px solid #333; }
+    .invoice-footer { border-top: 1px solid #eee; padding-top: 16px; font-size: 11px; color: #666; text-align: center; }
 
     .empty-state { display: flex; height: 100%; justify-content: center; align-items: center; color: var(--text-muted); font-size: 14px; }
   </style>
 </head>
 <body>
 
-  <!-- Top Outlook Bar -->
+  <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M1 4.5A2.5 2.5 0 0 1 3.5 2h17A2.5 2.5 0 0 1 23 4.5v15a2.5 2.5 0 0 1-2.5 2.5h-17A2.5 2.5 0 0 1 1 19.5v-15zM3.5 3A1.5 1.5 0 0 0 2 4.5v.382l10 6.25 10-6.25V4.5A1.5 1.5 0 0 0 20.5 3h-17zM22 6.136l-9.47 5.918a1 1 0 0 1-1.06 0L2 6.136V19.5A1.5 1.5 0 0 0 3.5 21h17a1.5 1.5 0 0 0 1.5-1.5V6.136z"/></svg>
-      Outlook Phishing Training Simulator
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      RuinScam Email Phishing Simulator
     </div>
     <div class="sim-controls">
-      <span>Cycle: <strong id="cycle-display">Week 1</strong></span>
-      <span>Days Left: <strong id="days-display">7</strong></span>
-      <button class="btn-sim" id="btn-advance-week">Advance Week ⏩</button>
+      <span>Batch Cycle: <strong id="cycle-display">Week 1</strong></span>
+      <span>Total Emails: <strong id="total-emails-display">25</strong></span>
+      <button class="btn-sim" id="btn-advance-week">New 7-Day Cycle ⏩</button>
     </div>
   </div>
 
-  <!-- Main Application Container -->
+  <!-- Main Container -->
   <div class="app-container">
     
-    <!-- Left Navigation Bar -->
+    <!-- Left Navigation -->
     <div class="sidebar">
       <div class="folder-item active" id="folder-inbox" onclick="switchFolder('inbox')">
         <span>📥 Inbox</span>
@@ -156,19 +177,19 @@
       </div>
 
       <div class="stats-panel">
-        <strong style="display:block; margin-bottom:8px;">Performance Stats</strong>
+        <strong style="display:block; margin-bottom:8px; font-size:13px;">Training Performance</strong>
         <div class="stat-row"><span>Phishing Caught:</span><span id="stat-caught">0</span></div>
         <div class="stat-row"><span>False Positives:</span><span id="stat-fp">0</span></div>
-        <div class="stat-row"><span>Accuracy:</span><span id="stat-accuracy">100%</span></div>
+        <div class="stat-row"><span>Detection Accuracy:</span><span id="stat-accuracy">100%</span></div>
       </div>
     </div>
 
-    <!-- Middle Email List Pane -->
+    <!-- Email List -->
     <div class="email-list" id="email-list"></div>
 
-    <!-- Right Reading Pane -->
+    <!-- Reading Pane -->
     <div class="reading-pane" id="reading-pane">
-      <div class="empty-state" id="empty-state">Select an email to inspect header, links, and attachments.</div>
+      <div class="empty-state" id="empty-state">Select an email to inspect headers, hover links, and PDF invoice attachments.</div>
       
       <div id="email-view" style="display:none; flex-direction:column; height:100%;">
         <div class="action-bar">
@@ -191,17 +212,17 @@
           <div id="view-attachment-container"></div>
         </div>
         
-        <!-- Hover Link URL Status Bar -->
-        <div class="status-bar" id="link-status-bar">Hover over any link to inspect target URL...</div>
+        <!-- Status Bar -->
+        <div class="status-bar" id="link-status-bar">Hover over links to preview raw destination URLs...</div>
       </div>
     </div>
   </div>
 
-  <!-- Document Preview Modal -->
+  <!-- Document Modal -->
   <div class="modal-overlay" id="doc-modal">
     <div class="modal-card">
       <div class="modal-header">
-        <span id="modal-title">Document Preview</span>
+        <span id="modal-title">PDF Preview</span>
         <button class="close-btn" onclick="closeModal()">✕</button>
       </div>
       <div class="modal-body" id="modal-content"></div>
@@ -210,125 +231,334 @@
 
   <script>
     let currentWeek = 1;
-    let daysRemaining = 7;
     let activeFolder = 'inbox';
     let selectedEmailId = null;
 
-    let stats = { caught: 0, falsePositives: 0, totalPhishingProcessed: 0 };
+    let stats = { caught: 0, falsePositives: 0 };
     let emails = [];
 
+    // --- Master Phishing Templates (15 unique scenarios with typosquatting, urgency, link traps) ---
     const phishingTemplates = [
       {
-        senderName: "QuickBooks Billing",
-        senderEmail: "invoicing@quickbooks-services-update.com",
-        subject: "Overdue Invoice #90842 - Immediate Action Required",
-        snippet: "Your account is past due. Please review the attached invoice immediately.",
-        body: `<p>Dear Customer,</p><p>Your invoice <strong>#90842</strong> is past due by 15 days. Unpaid balances will incur a 10% penalty fee after 24 hours.</p><p>Please <a href="http://login-quickbooks-verify-billing.net/pay/90842" class="sim-link">Click Here to Review and Settle Invoice</a> immediately.</p>`,
+        senderName: "QuickBooks Invoicing",
+        senderEmail: "invoicing@quickbo0ks-billing-update.com", // Typosquatting: bo0ks
+        subject: "OVERDUE INVOICE #90842 - Immediate Action Required",
+        snippet: "Your account is past due by 15 days. Review the attached PDF invoice immediately.",
+        body: `<p>Dear Customer,</p><p>Your account invoice <strong>#90842</strong> is past due. Unpaid balances will incur an immediate 15% late fee penalty after 24 hours.</p><p>Please <a href="http://login-quickbo0ks-verify-billing.net/pay/90842" class="sim-link">Click Here to Pay Invoice Online</a> or review the attached invoice manifest.</p>`,
         hasAttachment: true,
         attachmentName: "Invoice_90842_Overdue.pdf",
-        attachmentDocType: "invoice",
-        attachmentDetails: { title: "Invoice #90842", amount: "$1,842.50", vendor: "QuickBooks Billing Proxy Inc.", link: "http://secure-quickbooks-payment.net/checkout" }
+        invoiceData: {
+          vendor: "QuickBo0ks Services Corp.",
+          billTo: "Accounting Department",
+          invNum: "INV-90842",
+          invDate: "12 Days Ago",
+          dueDate: "IMMEDIATE",
+          items: [
+            { desc: "QuickBooks Enterprise Enterprise Cloud Subscription (Annual)", qty: 1, price: "$2,450.00", total: "$2,450.00" },
+            { desc: "Late Settlement Administrative Processing Fee", qty: 1, price: "$245.00", total: "$245.00" }
+          ],
+          subtotal: "$2,695.00", tax: "$0.00", grandTotal: "$2,695.00",
+          paymentLink: "http://login-quickbo0ks-verify-billing.net/checkout"
+        }
       },
       {
         senderName: "Microsoft Security Team",
-        senderEmail: "no-reply@microsoft-account-alerts.info",
+        senderEmail: "no-reply@micros0ft-account-alerts.info", // Typosquatting: micros0ft
         subject: "Security Alert: Unusual sign-in activity detected",
-        snippet: "Someone attempted to log into your account from an unrecognized device.",
-        body: `<p>We detected an unusual login attempt from Moscow, Russia.</p><p>If this was not you, please immediately update your password via our security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">Verify & Secure Your Microsoft Account</a></p>`,
+        snippet: "Unusual login attempt from Moscow, Russia detected on your Microsoft account.",
+        body: `<p>We detected an unauthorized login attempt from IP 185.220.101.5 (Moscow, Russia).</p><p>If this was not you, reset your password immediately via the security portal:</p><p><a href="http://login.micros0ft-security-auth.com/reset-password" class="sim-link">https://account.microsoft.com/security/reset-auth</a></p>`, // Deceptive visible text vs href
         hasAttachment: false
       },
       {
-        senderName: "IT Support Desk",
-        senderEmail: "helpdesk@company-mail-server-update.org",
-        subject: "Action Required: Password Expiration Notice",
-        snippet: "Your corporate webmail password expires in 2 hours.",
-        body: `<p>Your password is scheduled to expire today. Failure to update will lock your inbox access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Same Password / Extend Expiration</a></p>`,
+        senderName: "PayPal Fraud Department",
+        senderEmail: "service@paypaI-support-center.com", // Typosquatting: Capital I instead of l in paypaI
+        subject: "Notice: Payment of $1,299.00 sent to CryptoExchange Inc.",
+        snippet: "You authorized a payment of $1,299.00 USD. If you did not make this purchase, click inside.",
+        body: `<p>You sent a payment of <strong>$1,299.00 USD</strong> to CryptoExchange Global LLC.</p><p>If you did not authorize this charge, dispute the transaction instantly:</p><p><a href="http://paypaI-support-center.com/dispute/tx90123" class="sim-link">Cancel Payment & Dispute Transaction</a></p>`,
         hasAttachment: false
       },
       {
-        senderName: "DHL Express Tracking",
-        senderEmail: "notifications@dhl-delivery-status.com",
-        subject: "Delivery Failed: Address Verification Needed",
-        snippet: "Your parcel could not be delivered due to an incomplete delivery address.",
-        body: `<p>Parcel ID #491208 could not be delivered.</p><p>Confirm your address details in the document preview below to reschedule delivery within 48 hours.</p>`,
+        senderName: "Amazon Order Care",
+        senderEmail: "shipment-update@amzon-fulfillment-center.net", // Typosquatting: amzon
+        subject: "Your order #114-890212-33910 has shipped: Apple MacBook Pro 16\"",
+        snippet: "Order charged: $2,499.00. Delivered to address in Houston, TX.",
+        body: `<p>Thank you for shopping with Amazon!</p><p>Item: <strong>Apple MacBook Pro 16" M3 Max</strong><br>Total Charged: $2,499.00</p><p>Did not order this item? <a href="http://amzon-fulfillment-center.net/cancel-order/114-890212" class="sim-link">Cancel Order & Request Full Refund</a></p>`,
         hasAttachment: true,
-        attachmentName: "DHL_Shipping_Manifest.pdf",
-        attachmentDocType: "shipping",
-        attachmentDetails: { title: "DHL Express Delivery Notice", amount: "$3.50 Redelivery Fee", vendor: "DHL Logistics Express", link: "http://dhl-address-confirm-pay.com" }
+        attachmentName: "Amazon_Order_Receipt_114-890212.pdf",
+        invoiceData: {
+          vendor: "Amzon Fulfillment Services Inc.",
+          billTo: "Valued Customer",
+          invNum: "AMZ-114-890212",
+          invDate: "Today",
+          dueDate: "Paid via Credit Card",
+          items: [
+            { desc: "Apple MacBook Pro 16\" M3 Max (36GB RAM, 1TB SSD) - Space Black", qty: 1, price: "$2,499.00", total: "$2,499.00" }
+          ],
+          subtotal: "$2,499.00", tax: "$199.92", grandTotal: "$2,698.92",
+          paymentLink: "http://amzon-fulfillment-center.net/dispute"
+        }
+      },
+      {
+        senderName: "IT Desk Support",
+        senderEmail: "helpdesk@rnicro-corp-support.com", // Typosquatting: rn instead of m in rnicro
+        subject: "URGENT: Corporate Email Password Expiration Notice",
+        snippet: "Your webmail password expires in 2 hours. Click to maintain existing password.",
+        body: `<p>Your webmail authentication credential will expire in 2 hours.</p><p>Failure to update will lock your account out of corporate Outlook and VPN access.</p><p><a href="http://corporate-portal-login.info/auth/login" class="sim-link">Keep Current Password & Extend Expiration</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "DocuSign Signature Desk",
+        senderEmail: "docusign@docusgn-signature-verify.org", // Typosquatting: docusgn
+        subject: "Please DocuSign: Executive Wire Transfer Authorization.pdf",
+        snippet: "Chief Executive Officer has sent you a document to review and sign.",
+        body: `<p>Please review and sign the attached urgent financial compliance authorization document.</p><p><a href="http://docusgn-signature-verify.org/document/sign/8912" class="sim-link">View Document on DocuSign Security Server</a></p>`,
+        hasAttachment: true,
+        attachmentName: "DocuSign_Wire_Authorization_Notice.pdf",
+        invoiceData: {
+          vendor: "DocuSgn eSignature Network",
+          billTo: "Executive Signer",
+          invNum: "DOC-890123",
+          invDate: "Today",
+          dueDate: "Immediate Signature Required",
+          items: [
+            { desc: "Wire Transfer Compliance Authorization Form - Wire #9012", qty: 1, price: "$0.00", total: "$0.00" }
+          ],
+          subtotal: "$0.00", tax: "$0.00", grandTotal: "$0.00",
+          paymentLink: "http://docusgn-signature-verify.org/sign"
+        }
+      },
+      {
+        senderName: "DHL Express Logistics",
+        senderEmail: "tracking@dhi-express-logistics.com", // Typosquatting: dhi (letter i)
+        subject: "Delivery Delay: Address Verification Required for Parcel #49021",
+        snippet: "Parcel #49021 cannot be delivered. Review PDF manifest and confirm address.",
+        body: `<p>We were unable to deliver package #49021 due to an incomplete delivery address.</p><p>Review the shipping document and update your delivery information within 24 hours:</p><p><a href="http://dhi-express-logistics.com/address-confirm" class="sim-link">Confirm Delivery Address & Reschedule</a></p>`,
+        hasAttachment: true,
+        attachmentName: "DHL_Shipping_Manifest_49021.pdf",
+        invoiceData: {
+          vendor: "DHI Express Freight Logistics",
+          billTo: "Recipient",
+          invNum: "DHL-49021-US",
+          invDate: "Yesterday",
+          dueDate: "Immediate",
+          items: [
+            { desc: "International Express Shipping Redelivery Fee", qty: 1, price: "$4.95", total: "$4.95" }
+          ],
+          subtotal: "$4.95", tax: "$0.00", grandTotal: "$4.95",
+          paymentLink: "http://dhi-express-logistics.com/pay-redelivery"
+        }
+      },
+      {
+        senderName: "Geek Squad Renewals",
+        senderEmail: "billing@geeksquad-tech-renewals.info",
+        subject: "Auto-Renewal Confirmation: $499.99 Charged for Total Tech Support",
+        snippet: "Your subscription auto-renewed for $499.99. Call or click link inside to cancel.",
+        body: `<p>Thank you for choosing Geek Squad!</p><p>Your annual Total Tech Protection auto-renewed today for <strong>$499.99</strong>.</p><p>If you wish to cancel this order and request a refund, visit our cancellation desk immediately:<br><a href="http://geeksquad-tech-renewals.info/cancel/gs9012" class="sim-link">Cancel Auto-Renewal Order</a></p>`,
+        hasAttachment: true,
+        attachmentName: "GeekSquad_Receipt_GS9012.pdf",
+        invoiceData: {
+          vendor: "Geek Squad Tech Protection Inc.",
+          billTo: "Auto-Renew Client",
+          invNum: "GS-891204",
+          invDate: "Today",
+          dueDate: "Paid Auto-Debit",
+          items: [
+            { desc: "Geek Squad Total Tech Support 2-Year Auto Plan", qty: 1, price: "$499.99", total: "$499.99" }
+          ],
+          subtotal: "$499.99", tax: "$39.99", grandTotal: "$539.98",
+          paymentLink: "http://geeksquad-tech-renewals.info/cancel"
+        }
+      },
+      {
+        senderName: "HR Payroll Department",
+        senderEmail: "payroll@company-hr-portal-benefits.net", // Fake external domain pretending to be internal
+        subject: "IMPORTANT: Direct Deposit Account Verification Needed",
+        snippet: "Please verify your bank details before the upcoming payroll run.",
+        body: `<p>Due to system migration, employees must re-verify direct deposit credentials prior to Friday's payroll run.</p><p><a href="http://company-hr-portal-benefits.net/verify-payroll" class="sim-link">Update Direct Deposit Information</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Zoom Video Network",
+        senderEmail: "no-reply@zoom-us-meeting-join.net", // Fake domain zoom-us
+        subject: "Missed Executive Call: View Meeting Recording & Transcript",
+        snippet: "You missed an urgent team meeting hosted by Management.",
+        body: `<p>You missed an audio/video conference meeting.</p><p><strong>Meeting Topic:</strong> Q3 Restructuring & Payroll Changes<br><strong>Recording Length:</strong> 14 mins</p><p><a href="http://zoom-us-meeting-join.net/recording/play?id=9012" class="sim-link">Play Voice Recording & Download Transcript</a></p>`,
+        hasAttachment: false
       }
     ];
 
+    // --- Master Legitimate Templates (20 unique scenarios) ---
     const legitTemplates = [
       {
         senderName: "HR Department",
         senderEmail: "hr@company.com",
         subject: "Reminder: Open Enrollment Deadline Next Friday",
-        snippet: "Please ensure your benefits selection is finalized in the internal portal.",
-        body: `<p>Hi Team,</p><p>This is a quick reminder that open enrollment for healthcare benefits closes next Friday at 5:00 PM.</p><p>You can access your portal here: <a href="https://internal.company.com/hr/benefits" class="sim-link">Company HR Benefits Portal</a>.</p>`,
+        snippet: "Please ensure your healthcare benefits selection is finalized in the internal portal.",
+        body: `<p>Hi Team,</p><p>This is a reminder that open enrollment for health benefits closes next Friday at 5:00 PM.</p><p>You can access the internal portal here: <a href="https://internal.company.com/hr/benefits" class="sim-link">Company HR Benefits Portal</a>.</p>`,
         hasAttachment: false
       },
       {
         senderName: "GitHub Notifications",
         senderEmail: "notifications@github.com",
-        subject: "[GitHub] Security Advisory Digest for Repository",
-        snippet: "New dependabot alert opened for security dependency.",
-        body: `<p>Dependabot detected 1 low severity vulnerability in your project dependencies.</p><p>View security advisory details on <a href="https://github.com/security/advisories" class="sim-link">GitHub Security Hub</a>.</p>`,
+        subject: "[GitHub] Dependabot Security Advisory Alert",
+        snippet: "Dependabot opened a security vulnerability pull request in repo.",
+        body: `<p>Dependabot detected 1 low severity vulnerability in project dependencies.</p><p>View security advisory details on <a href="https://github.com/security/advisories" class="sim-link">GitHub Security Hub</a>.</p>`,
         hasAttachment: false
       },
       {
         senderName: "Calendar System",
         senderEmail: "calendar-invites@company.com",
-        subject: "Invitation: Weekly Sprint Planning @ Mon 10am",
-        snippet: "You have been invited to Sprint Planning. Accept or Decline inside.",
-        body: `<p>Organizer: Product Management</p><p>Join Video Call: <a href="https://meet.company.com/sprint-planning-room" class="sim-link">https://meet.company.com/sprint-planning-room</a></p>`,
+        subject: "Invitation: All-Hands Team Sync @ Mon 10am",
+        snippet: "You have been invited to All-Hands Team Sync.",
+        body: `<p>Organizer: Executive Leadership</p><p>Join Video Call: <a href="https://meet.company.com/all-hands-room" class="sim-link">https://meet.company.com/all-hands-room</a></p>`,
         hasAttachment: false
       },
       {
         senderName: "Acme Cloud Services",
         senderEmail: "billing@acmecloud.com",
-        subject: "Your Monthly Statement for July",
-        snippet: "Your monthly invoice statement is ready to view.",
-        body: `<p>Hello,</p><p>Your monthly statement for July is now available online. Total charged: $42.00.</p><p>Attached is your standard receipt copy for accounting records.</p>`,
+        subject: "Monthly Service Receipt - Statement #AC-8901",
+        snippet: "Your monthly invoice statement for cloud servers is ready.",
+        body: `<p>Hello,</p><p>Your monthly statement for cloud hosting is available. Total charged: $42.00.</p><p>Attached is your formal receipt copy for accounting records.</p>`,
         hasAttachment: true,
-        attachmentName: "AcmeCloud_July_Receipt.pdf",
-        attachmentDocType: "receipt",
-        attachmentDetails: { title: "Acme Cloud Services Receipt", amount: "$42.00", vendor: "Acme Cloud Inc.", link: "https://acmecloud.com/portal/invoices" }
+        attachmentName: "AcmeCloud_Monthly_Receipt.pdf",
+        invoiceData: {
+          vendor: "Acme Cloud Infrastructure LLC",
+          billTo: "Engineering Team",
+          invNum: "AC-89012",
+          invDate: "1st of Month",
+          dueDate: "Paid Auto-Debit",
+          items: [
+            { desc: "Standard Cloud Compute Instance - 4 vCPU, 16GB RAM", qty: 1, price: "$42.00", total: "$42.00" }
+          ],
+          subtotal: "$42.00", tax: "$0.00", grandTotal: "$42.00",
+          paymentLink: "https://acmecloud.com/portal/invoices"
+        }
+      },
+      {
+        senderName: "Slack Team",
+        senderEmail: "feedback@slack.com",
+        subject: "Weekly Digest: Unread messages in #general",
+        snippet: "Catch up on what you missed in your Slack workspace.",
+        body: `<p>You have 14 unread messages across 3 channels.</p><p><a href="https://app.slack.com/client" class="sim-link">Open Slack Workspace</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Atlassian Jira",
+        senderEmail: "jira@company.atlassian.net",
+        subject: "[Jira] Task Assigned: Fix Navigation Bar Mobile Responsiveness",
+        snippet: "Lead Developer assigned ticket DEV-4091 to you.",
+        body: `<p>Ticket <strong>DEV-4091</strong> has been assigned to you.</p><p>View details on <a href="https://company.atlassian.net/browse/DEV-4091" class="sim-link">Jira Board</a>.</p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Google Workspace",
+        senderEmail: "no-reply@google.com",
+        subject: "Monthly Storage Quota Summary Report",
+        snippet: "Your team cloud storage utilization report is available.",
+        body: `<p>Your team is currently using 45% of allocated Google Drive storage.</p><p><a href="https://admin.google.com/dashboard" class="sim-link">Manage Storage Settings</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Internal IT Operations",
+        senderEmail: "it-service@company.com",
+        subject: "Scheduled Maintenance Window: Saturday 2:00 AM EST",
+        snippet: "VPN and core internal databases will undergo routine maintenance.",
+        body: `<p>Please be advised that internal VPN systems will be offline for 1 hour this Saturday for patching.</p><p>Questions? Contact <a href="mailto:it-service@company.com">Internal IT Helpdesk</a>.</p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Stripe Billing",
+        senderEmail: "invoices@stripe.com",
+        subject: "Receipt for Payment to Figma Inc.",
+        snippet: "Payment receipt of $15.00 for Figma Professional Subscription.",
+        body: `<p>Amount paid: $15.00 USD</p><p>Thank you for your payment to Figma Inc.</p><p><a href="https://pay.stripe.com/receipts/acct_102931" class="sim-link">View Detailed Stripe Receipt online</a></p>`,
+        hasAttachment: true,
+        attachmentName: "Stripe_Figma_Receipt.pdf",
+        invoiceData: {
+          vendor: "Stripe / Figma Inc.",
+          billTo: "Design Team",
+          invNum: "ST-890123",
+          invDate: "3 Days Ago",
+          dueDate: "Paid",
+          items: [
+            { desc: "Figma Professional Editor License (Monthly)", qty: 1, price: "$15.00", total: "$15.00" }
+          ],
+          subtotal: "$15.00", tax: "$0.00", grandTotal: "$15.00",
+          paymentLink: "https://pay.stripe.com/receipts"
+        }
+      },
+      {
+        senderName: "Figma Team",
+        senderEmail: "comments@figma.com",
+        subject: "New comment on 'Mobile UI Component Library'",
+        snippet: "Sarah left a comment: 'Great job on the updated color tokens!'",
+        body: `<p>Sarah commented on <strong>Mobile UI Component Library</strong>:</p><p><em>"Great job on the updated color tokens!"</em></p><p><a href="https://figma.com/file/sample-id" class="sim-link">Open in Figma</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Amazon Web Services",
+        senderEmail: "no-reply@amazonaws.com",
+        subject: "AWS Billing Statement Available for Account #****-9012",
+        snippet: "Your monthly AWS invoice is now available in Billing Console.",
+        body: `<p>Your total AWS charges for last month: <strong>$128.40</strong>.</p><p><a href="https://console.aws.amazon.com/billing" class="sim-link">View AWS Billing Console</a></p>`,
+        hasAttachment: false
+      },
+      {
+        senderName: "Facilities Operations",
+        senderEmail: "facilities@company.com",
+        subject: "Building Access Control & Security Badge Updates",
+        snippet: "Please update your security keycard at building lobby desk.",
+        body: `<p>All employees must update physical keycards by the end of the month.</p><p>Contact facilities directly at <a href="https://internal.company.com/facilities" class="sim-link">Internal Facilities Portal</a>.</p>`,
+        hasAttachment: false
       }
     ];
 
+    // --- Generation Engine: Exactly 25 Emails (10 Phishing = 40%, 15 Legit = 60%) ---
     function generateWeeklyInbox() {
       emails = [];
-      const emailCount = 10;
+      const totalCount = 25;
+      const phishingCount = 10; // Exactly 40%
+      const legitCount = 15;    // Exactly 60%
 
-      for (let i = 0; i < emailCount; i++) {
-        const isPhishing = Math.random() < 0.4;
-        let pool = isPhishing ? phishingTemplates : legitTemplates;
-        let template = pool[Math.floor(Math.random() * pool.length)];
-
-        let newEmail = {
-          id: 'email_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
-          isPhishing: isPhishing,
-          folder: 'inbox',
-          senderName: template.senderName,
-          senderEmail: template.senderEmail,
-          subject: template.subject,
-          snippet: template.snippet,
-          body: template.body,
-          hasAttachment: template.hasAttachment,
-          attachmentName: template.attachmentName,
-          attachmentDocType: template.attachmentDocType,
-          attachmentDetails: template.attachmentDetails,
-          date: new Date(Date.now() - Math.floor(Math.random() * 5) * 86400000).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })
-        };
-
-        emails.push(newEmail);
+      // Pick 10 random Phishing templates
+      let shuffledPhish = [...phishingTemplates].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < phishingCount; i++) {
+        let template = shuffledPhish[i % shuffledPhish.length];
+        emails.push(createEmailObject(template, true));
       }
-      
+
+      // Pick 15 random Legitimate templates
+      let shuffledLegit = [...legitTemplates].sort(() => Math.random() - 0.5);
+      for (let i = 0; i < legitCount; i++) {
+        let template = shuffledLegit[i % shuffledLegit.length];
+        emails.push(createEmailObject(template, false));
+      }
+
+      // Shuffle all 25 emails so there is zero pattern/order
       emails.sort(() => Math.random() - 0.5);
+
       selectedEmailId = null;
       renderApp();
     }
 
+    function createEmailObject(template, isPhishing) {
+      return {
+        id: 'email_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6),
+        isPhishing: isPhishing,
+        folder: 'inbox',
+        senderName: template.senderName,
+        senderEmail: template.senderEmail,
+        subject: template.subject,
+        snippet: template.snippet,
+        body: template.body,
+        hasAttachment: template.hasAttachment,
+        attachmentName: template.attachmentName,
+        invoiceData: template.invoiceData,
+        date: new Date(Date.now() - Math.floor(Math.random() * 6) * 86400000).toLocaleDateString("en-US", { month: 'short', day: 'numeric' })
+      };
+    }
+
+    // --- GUI Render Engine ---
     function renderApp() {
       const inboxList = emails.filter(e => e.folder === 'inbox');
       const spamList = emails.filter(e => e.folder === 'spam');
@@ -351,7 +581,10 @@
           item.className = `email-item ${email.id === selectedEmailId ? 'selected' : ''}`;
           item.onclick = () => selectEmail(email.id);
           item.innerHTML = `
-            <div class="sender">${escapeHtml(email.senderName)}</div>
+            <div class="sender">
+              <span>${escapeHtml(email.senderName)}</span>
+              <span style="font-size:11px; font-weight:normal; color:var(--text-muted);">${email.date}</span>
+            </div>
             <div class="subject">${escapeHtml(email.subject)}</div>
             <div class="snippet">${escapeHtml(email.snippet)}</div>
           `;
@@ -381,24 +614,27 @@
         if (selected.hasAttachment) {
           attachContainer.innerHTML = `
             <div class="attachment-box" onclick="previewAttachment('${selected.id}')">
-              📄 <div>
-                <strong>${escapeHtml(selected.attachmentName)}</strong>
-                <div style="font-size:11px; color:var(--text-muted);">Click to preview document</div>
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="#d13438"><path d="M20 2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H8V4h12v12zM4 6H2v14c0 1.1.9 2 2 2h14v-2H4V6zm12 6V9c0-.55-.45-1-1-1h-2v6h2c.55 0 1-.45 1-1zm-2-2h1v2h-1v-2z"/></svg>
+              <div>
+                <strong style="font-size:13px;">${escapeHtml(selected.attachmentName)}</strong>
+                <div style="font-size:11px; color:var(--text-muted);">PDF Document Attachment • Click to inspect invoice</div>
               </div>
             </div>
           `;
         }
 
+        // Link hover inspection binding
         setTimeout(() => {
-          const links = document.querySelectorAll('#view-body a.sim-link');
+          const links = document.querySelectorAll('#view-body a');
           const statusBar = document.getElementById('link-status-bar');
           links.forEach(link => {
             link.addEventListener('mouseenter', (e) => {
-              statusBar.innerText = 'Target URL: ' + e.target.getAttribute('href');
-              statusBar.style.color = '#d13438';
+              const targetUrl = e.target.getAttribute('href');
+              statusBar.innerText = 'Target URL Preview: ' + targetUrl;
+              statusBar.style.color = targetUrl.startsWith('http:') ? '#d13438' : '#0078d4';
             });
             link.addEventListener('mouseleave', () => {
-              statusBar.innerText = 'Hover over any link to inspect target URL...';
+              statusBar.innerText = 'Hover over links to preview raw destination URLs...';
               statusBar.style.color = 'var(--text-muted)';
             });
             link.addEventListener('click', (e) => {
@@ -436,7 +672,7 @@
         email.folder = 'spam';
         if (email.isPhishing) {
           stats.caught++;
-          alert('Correct! That email was a phishing attempt and has been moved to Spam.');
+          alert('Correct! That email was a phishing attempt and has been moved to Junk / Spam.');
         } else {
           stats.falsePositives++;
           alert('False Alarm: That email was legitimate.');
@@ -468,25 +704,86 @@
       renderApp();
     }
 
+    // --- PDF Invoice Modal Preview ---
     function previewAttachment(id) {
       const email = emails.find(e => e.id === id);
-      if (!email || !email.hasAttachment) return;
+      if (!email || !email.hasAttachment || !email.invoiceData) return;
 
       const modal = document.getElementById('doc-modal');
       const title = document.getElementById('modal-title');
       const content = document.getElementById('modal-content');
 
-      title.innerText = `Document Preview: ${email.attachmentName}`;
+      title.innerText = `PDF Document Reader: ${email.attachmentName}`;
       
-      const details = email.attachmentDetails;
+      const inv = email.invoiceData;
+      let itemsHtml = inv.items.map(i => `
+        <tr>
+          <td>${escapeHtml(i.desc)}</td>
+          <td style="text-align:center;">${i.qty}</td>
+          <td style="text-align:right;">${i.price}</td>
+          <td style="text-align:right;">${i.total}</td>
+        </tr>
+      `).join('');
+
       content.innerHTML = `
-        <div style="border:1px solid #ccc; padding:20px; border-radius:4px; background:#fff;">
-          <h3 style="margin-bottom:10px;">${escapeHtml(details.title)}</h3>
-          <p><strong>Vendor/Issuer:</strong> ${escapeHtml(details.vendor)}</p>
-          <p><strong>Amount Due:</strong> ${escapeHtml(details.amount)}</p>
-          <hr style="margin:15px 0; border:none; border-top:1px solid #eee;">
-          <p style="margin-bottom:15px;">Please confirm payment details below:</p>
-          <a href="${details.link}" class="sim-link" style="background:var(--outlook-blue); color:white; padding:8px 16px; border-radius:4px; text-decoration:none; display:inline-block;">Pay / Confirm Online</a>
+        <div class="pdf-paper">
+          <div class="invoice-header-row">
+            <div>
+              <div class="invoice-title">INVOICE</div>
+              <div style="font-weight:bold; margin-top:4px;">${escapeHtml(inv.vendor)}</div>
+            </div>
+            <div class="invoice-meta">
+              <div><strong>Invoice #:</strong> ${escapeHtml(inv.invNum)}</div>
+              <div><strong>Date:</strong> ${escapeHtml(inv.invDate)}</div>
+              <div><strong>Due Date:</strong> ${escapeHtml(inv.dueDate)}</div>
+            </div>
+          </div>
+
+          <div class="invoice-addresses">
+            <div>
+              <strong style="color:#666;">Billed To:</strong><br>
+              ${escapeHtml(inv.billTo)}
+            </div>
+            <div style="text-align:right;">
+              <strong style="color:#666;">Payment Status:</strong><br>
+              <span style="color:${email.isPhishing ? '#d13438' : '#107c41'}; font-weight:bold;">${email.isPhishing ? 'OVERDUE / ACTION REQ' : 'PROCESSING'}</span>
+            </div>
+          </div>
+
+          <table class="invoice-table">
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th style="text-align:center;">Qty</th>
+                <th style="text-align:right;">Price</th>
+                <th style="text-align:right;">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${itemsHtml}
+            </tbody>
+          </table>
+
+          <div class="invoice-total-section">
+            <table class="invoice-total-table">
+              <tr>
+                <td>Subtotal:</td>
+                <td style="text-align:right;">${inv.subtotal}</td>
+              </tr>
+              <tr>
+                <td>Tax:</td>
+                <td style="text-align:right;">${inv.tax}</td>
+              </tr>
+              <tr class="grand-total">
+                <td>Total Due:</td>
+                <td style="text-align:right;">${inv.grandTotal}</td>
+              </tr>
+            </table>
+          </div>
+
+          <div class="invoice-footer">
+            <p>To view or settle this account online, visit: <a href="${inv.paymentLink}" class="sim-link">${inv.paymentLink}</a></p>
+          </div>
         </div>
       `;
 
@@ -507,19 +804,19 @@
       document.getElementById('doc-modal').style.display = 'none';
     }
 
+    // --- 7-Day Cycle Automation ---
     document.getElementById('btn-advance-week').onclick = () => {
       currentWeek++;
-      daysRemaining = 7;
       document.getElementById('cycle-display').innerText = `Week ${currentWeek}`;
-      document.getElementById('days-display').innerText = daysRemaining;
       generateWeeklyInbox();
-      alert(`New week started! Inbox refreshed with a new 7-day batch of 40% phishing and 60% legitimate emails.`);
+      alert(`New 7-Day Cycle Started!\n\nInbox refreshed with 25 new emails (10 Phishing, 15 Legitimate).`);
     };
 
     function escapeHtml(str) {
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
 
+    // Initialize Cycle
     generateWeeklyInbox();
   </script>
 </body>
